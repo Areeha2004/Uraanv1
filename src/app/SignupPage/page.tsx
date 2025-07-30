@@ -1,5 +1,5 @@
 
-  "use client"; // ✅ Required for Next.js App Router
+  "use client" // ✅ Required for Next.js App Router
 
 import React, { useState } from 'react';
 import Link from 'next/link';

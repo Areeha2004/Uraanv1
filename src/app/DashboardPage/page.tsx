@@ -1,43 +1,55 @@
 "use client"
-import React, { useState } from 'react';
-import Link from 'next/link';
+import React, { useState } from "react";
+import { useSession } from "next-auth/react";
+import Image from "next/image"; // optional, for better image handling
+import Link from "next/link";
 
-import { 
-  TrendingUp, 
-  Download, 
-  Users, 
-  Award, 
-  CheckCircle, 
-  Clock, 
+import {
+  TrendingUp,
+  Download,
+  Users,
+  Award,
+  CheckCircle,
+  Clock,
   Star,
   ArrowRight,
   BookOpen,
   Target,
   Calendar,
-  MessageCircle
-} from 'lucide-react';
+  MessageCircle,
+} from "lucide-react";
 
 const DashboardPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const { data: session, status } = useSession();
+  const [activeTab, setActiveTab] = useState("overview");
 
-  // Mock user data
+  if (status === "loading") {
+    return <p>Loading...</p>; // or your custom loader
+  }
+
+  if (!session) {
+    return <p>Please log in to view your dashboard.</p>;
+  }
+
+  // Access real user data
   const userData = {
-    name: 'Fatima Khan',
-    avatar: 'https://images.pexels.com/photos/3184338/pexels-photo-3184338.jpeg',
-    businessIdea: 'Online Fashion Boutique',
-    joinDate: 'January 2025',
-    level: 'Rising Star',
-    points: 750
+    name: session.user.name || "User",
+    avatar: session.user.image || "https://via.placeholder.com/150",
+    businessIdea: "Online Fashion Boutique", // or fetch user-specific data here
+    joinDate: "January 2025", // placeholder unless stored
+    level: "Rising Star",
+    points: 750,
   };
 
   const progressData = {
     currentStep: 3,
     totalSteps: 6,
-    stepTitle: 'Supplier & Inventory Setup',
+    stepTitle: "Supplier & Inventory Setup",
     completedTasks: 8,
     totalTasks: 12,
-    nextMilestone: 'Launch Your Store'
+    nextMilestone: "Launch Your Store",
   };
+  const userId = session.user.id; // Get user ID from session
 
   const achievements = [
     {
@@ -178,11 +190,13 @@ const DashboardPage: React.FC = () => {
           <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-3xl p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <img
-                  src={userData.avatar}
-                  alt={userData.name}
-                  className="w-16 h-16 rounded-2xl object-cover"
-                />
+                <Image
+        src={userData.avatar}
+        width={100}
+        height={100}
+        alt={session.user.name || "User avatar"}
+        className="rounded-full"
+      />
                 <div>
                   <h1 className="text-2xl font-bold text-text">Welcome back, {userData.name}!</h1>
                   <p className="text-text/70">Building your {userData.businessIdea}</p>
