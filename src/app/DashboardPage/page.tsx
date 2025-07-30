@@ -1,0 +1,541 @@
+"use client"
+import React, { useState } from 'react';
+import Link from 'next/link';
+
+import { 
+  TrendingUp, 
+  Download, 
+  Users, 
+  Award, 
+  CheckCircle, 
+  Clock, 
+  Star,
+  ArrowRight,
+  BookOpen,
+  Target,
+  Calendar,
+  MessageCircle
+} from 'lucide-react';
+
+const DashboardPage: React.FC = () => {
+  const [activeTab, setActiveTab] = useState('overview');
+
+  // Mock user data
+  const userData = {
+    name: 'Fatima Khan',
+    avatar: 'https://images.pexels.com/photos/3184338/pexels-photo-3184338.jpeg',
+    businessIdea: 'Online Fashion Boutique',
+    joinDate: 'January 2025',
+    level: 'Rising Star',
+    points: 750
+  };
+
+  const progressData = {
+    currentStep: 3,
+    totalSteps: 6,
+    stepTitle: 'Supplier & Inventory Setup',
+    completedTasks: 8,
+    totalTasks: 12,
+    nextMilestone: 'Launch Your Store'
+  };
+
+  const achievements = [
+    {
+      id: 1,
+      title: 'Quiz Master',
+      description: 'Completed AI business analysis',
+      icon: Star,
+      earned: true,
+      date: 'Jan 15, 2025'
+    },
+    {
+      id: 2,
+      title: 'Goal Setter',
+      description: 'Set up your business roadmap',
+      icon: Target,
+      earned: true,
+      date: 'Jan 16, 2025'
+    },
+    {
+      id: 3,
+      title: 'Community Member',
+      description: 'Joined the URAAN community',
+      icon: Users,
+      earned: true,
+      date: 'Jan 16, 2025'
+    },
+    {
+      id: 4,
+      title: 'Resource Collector',
+      description: 'Downloaded 5 starter kits',
+      icon: Download,
+      earned: false,
+      progress: '3/5'
+    },
+    {
+      id: 5,
+      title: 'Collaborator',
+      description: 'Hired your first collaborator',
+      icon: Users,
+      earned: false,
+      progress: 'Locked'
+    },
+    {
+      id: 6,
+      title: 'Business Launcher',
+      description: 'Completed your roadmap',
+      icon: Award,
+      earned: false,
+      progress: 'Locked'
+    }
+  ];
+
+  const recentActivity = [
+    {
+      id: 1,
+      type: 'progress',
+      title: 'Completed market research tasks',
+      description: 'Step 1: Market Research & Planning',
+      timestamp: '2 hours ago',
+      icon: CheckCircle,
+      color: 'text-green-500'
+    },
+    {
+      id: 2,
+      type: 'download',
+      title: 'Downloaded Brand Identity Kit',
+      description: 'Resources for Step 2',
+      timestamp: '1 day ago',
+      icon: Download,
+      color: 'text-primary'
+    },
+    {
+      id: 3,
+      type: 'community',
+      title: 'Liked a success story',
+      description: 'Sana\'s jewelry business milestone',
+      timestamp: '2 days ago',
+      icon: MessageCircle,
+      color: 'text-accent2'
+    },
+    {
+      id: 4,
+      type: 'achievement',
+      title: 'Earned "Goal Setter" badge',
+      description: 'Roadmap setup completed',
+      timestamp: '3 days ago',
+      icon: Award,
+      color: 'text-yellow-500'
+    }
+  ];
+
+  const savedResources = [
+    {
+      id: 1,
+      title: 'Business Plan Template',
+      type: 'Template',
+      category: 'Foundation',
+      downloadDate: 'Jan 16, 2025'
+    },
+    {
+      id: 2,
+      title: 'Social Media Marketing Guide',
+      type: 'Guide',
+      category: 'Marketing',
+      downloadDate: 'Jan 15, 2025'
+    },
+    {
+      id: 3,
+      title: 'Brand Identity Kit',
+      type: 'Template Pack',
+      category: 'Branding',
+      downloadDate: 'Jan 14, 2025'
+    }
+  ];
+
+  const upcomingEvents = [
+    {
+      id: 1,
+      title: 'Digital Marketing Workshop',
+      date: 'March 18, 2025',
+      time: '7:00 PM',
+      type: 'Virtual'
+    },
+    {
+      id: 2,
+      title: 'Women Entrepreneur Meetup',
+      date: 'March 22, 2025',
+      time: '6:00 PM',
+      type: 'In-Person'
+    }
+  ];
+
+  return (
+    <div className="min-h-screen pt-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-base to-baby-powder">
+      <div className="max-w-7xl mx-auto py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-3xl p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <img
+                  src={userData.avatar}
+                  alt={userData.name}
+                  className="w-16 h-16 rounded-2xl object-cover"
+                />
+                <div>
+                  <h1 className="text-2xl font-bold text-text">Welcome back, {userData.name}!</h1>
+                  <p className="text-text/70">Building your {userData.businessIdea}</p>
+                  <div className="flex items-center space-x-4 mt-2">
+                    <div className="flex items-center space-x-1">
+                      <Award className="text-primary" size={16} />
+                      <span className="text-sm text-primary font-medium">{userData.level}</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Star className="text-yellow-500" size={16} />
+                      <span className="text-sm text-text">{userData.points} points</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-text/60">Member since</p>
+                <p className="font-semibold text-text">{userData.joinDate}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="flex flex-wrap gap-4 mb-8">
+          {[
+            { id: 'overview', label: 'Overview' },
+            { id: 'progress', label: 'My Progress' },
+            { id: 'resources', label: 'My Resources' },
+            { id: 'achievements', label: 'Achievements' }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-6 py-3 rounded-2xl font-medium transition-all duration-200 ${
+                activeTab === tab.id
+                  ? 'bg-primary text-baby-powder shadow-lg'
+                  : 'bg-glass-bg backdrop-blur-sm border border-secondary/20 text-text hover:bg-secondary/20'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Overview Tab */}
+        {activeTab === 'overview' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Current Progress Card */}
+              <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-3xl p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-text">Your Progress</h2>
+                  <Link
+                    href={`/RoadmapPage/${userData.businessIdea.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="text-primary hover:text-primary-light transition-colors text-sm font-medium"
+                  >
+                    View Full Roadmap →
+                  </Link>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-text/70">Current Step: {progressData.stepTitle}</span>
+                    <span className="text-primary font-semibold">
+                      Step {progressData.currentStep} of {progressData.totalSteps}
+                    </span>
+                  </div>
+                  
+                  <div className="w-full bg-secondary/20 rounded-full h-3">
+                    <div
+                      className="bg-gradient-to-r from-primary to-primary-light h-full rounded-full transition-all duration-500"
+                      style={{ width: `${(progressData.currentStep / progressData.totalSteps) * 100}%` }}
+                    />
+                  </div>
+
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-text/60">
+                      {progressData.completedTasks} of {progressData.totalTasks} tasks completed
+                    </span>
+                    <span className="text-primary font-medium">
+                      Next: {progressData.nextMilestone}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-3xl p-6">
+                <h2 className="text-xl font-bold text-text mb-6">Quick Actions</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Link
+                    href="/RoadmapPage/online-boutique"
+                    className="group p-4 bg-baby-powder/50 hover:bg-baby-powder rounded-2xl transition-all duration-200"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <BookOpen className="text-primary group-hover:scale-110 transition-transform" size={20} />
+                      <div>
+                        <h3 className="font-semibold text-text">Continue Roadmap</h3>
+                        <p className="text-xs text-text/60">Resume where you left off</p>
+                      </div>
+                    </div>
+                  </Link>
+
+                  <Link
+                    href="/ResourcesPage"
+                    className="group p-4 bg-baby-powder/50 hover:bg-baby-powder rounded-2xl transition-all duration-200"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <Download className="text-primary group-hover:scale-110 transition-transform" size={20} />
+                      <div>
+                        <h3 className="font-semibold text-text">Browse Resources</h3>
+                        <p className="text-xs text-text/60">Get templates & guides</p>
+                      </div>
+                    </div>
+                  </Link>
+
+                  <Link
+                    href="/CommunityPage"
+                    className="group p-4 bg-baby-powder/50 hover:bg-baby-powder rounded-2xl transition-all duration-200"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <Users className="text-primary group-hover:scale-110 transition-transform" size={20} />
+                      <div>
+                        <h3 className="font-semibold text-text">Join Discussion</h3>
+                        <p className="text-xs text-text/60">Connect with community</p>
+                      </div>
+                    </div>
+                  </Link>
+
+                  <Link
+                    href="/CollaborationPage"
+                    className="group p-4 bg-baby-powder/50 hover:bg-baby-powder rounded-2xl transition-all duration-200"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <TrendingUp className="text-primary group-hover:scale-110 transition-transform" size={20} />
+                      <div>
+                        <h3 className="font-semibold text-text">Find Collaborators</h3>
+                        <p className="text-xs text-text/60">Get professional help</p>
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Recent Activity */}
+              <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-3xl p-6">
+                <h2 className="text-xl font-bold text-text mb-6">Recent Activity</h2>
+                <div className="space-y-4">
+                  {recentActivity.map(activity => (
+                    <div key={activity.id} className="flex items-start space-x-3">
+                      <div className={`w-8 h-8 rounded-xl bg-baby-powder/50 flex items-center justify-center ${activity.color}`}>
+                        <activity.icon size={16} />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-medium text-text">{activity.title}</h3>
+                        <p className="text-sm text-text/60">{activity.description}</p>
+                        <p className="text-xs text-text/50 mt-1">{activity.timestamp}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-8">
+              {/* Stats */}
+              <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-3xl p-6">
+                <h3 className="text-lg font-bold text-text mb-4">Your Stats</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-text/70">Progress</span>
+                    <span className="font-semibold text-primary">50%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-text/70">Resources Downloaded</span>
+                    <span className="font-semibold text-text">8</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-text/70">Community Posts</span>
+                    <span className="font-semibold text-text">3</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-text/70">Days Active</span>
+                    <span className="font-semibold text-text">12</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Upcoming Events */}
+              <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-3xl p-6">
+                <h3 className="text-lg font-bold text-text mb-4">Upcoming Events</h3>
+                <div className="space-y-4">
+                  {upcomingEvents.map(event => (
+                    <div key={event.id} className="p-3 bg-baby-powder/50 rounded-2xl">
+                      <h4 className="font-semibold text-text text-sm">{event.title}</h4>
+                      <div className="flex items-center space-x-2 mt-1">
+                        <Calendar size={12} className="text-primary" />
+                        <span className="text-xs text-text/60">{event.date} • {event.time}</span>
+                      </div>
+                      <span className={`inline-block mt-2 px-2 py-1 rounded-full text-xs ${
+                        event.type === 'Virtual' 
+                          ? 'bg-blue-100 text-blue-700' 
+                          : 'bg-green-100 text-green-700'
+                      }`}>
+                        {event.type}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <Link
+                  href="/CommunityPage"
+                  className="inline-flex items-center space-x-1 text-primary hover:text-primary-light text-sm font-medium mt-4"
+                >
+                  <span>View all events</span>
+                  <ArrowRight size={14} />
+                </Link>
+              </div>
+
+              {/* Support */}
+              <div className="bg-gradient-to-br from-primary/10 to-accent2/10 rounded-3xl p-6">
+                <h3 className="text-lg font-bold text-text mb-2">Need Help?</h3>
+                <p className="text-text/70 text-sm mb-4">
+                  Our community is here to support you every step of the way.
+                </p>
+                <Link
+                  href="/ContactPage"
+                  className="inline-flex items-center space-x-2 bg-primary text-baby-powder px-4 py-2 rounded-xl font-medium hover:bg-primary-light transition-colors"
+                >
+                  <MessageCircle size={16} />
+                  <span>Get Support</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Progress Tab */}
+        {activeTab === 'progress' && (
+          <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-3xl p-8">
+            <h2 className="text-2xl font-bold text-text mb-6">Your Business Journey</h2>
+            
+            <div className="space-y-8">
+              {/* Progress Overview */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center p-6 bg-baby-powder/50 rounded-2xl">
+                  <div className="text-3xl font-bold text-primary mb-2">50%</div>
+                  <div className="text-text/70">Overall Progress</div>
+                </div>
+                <div className="text-center p-6 bg-baby-powder/50 rounded-2xl">
+                  <div className="text-3xl font-bold text-primary mb-2">3/6</div>
+                  <div className="text-text/70">Steps Completed</div>
+                </div>
+                <div className="text-center p-6 bg-baby-powder/50 rounded-2xl">
+                  <div className="text-3xl font-bold text-primary mb-2">8/12</div>
+                  <div className="text-text/70">Current Step Tasks</div>
+                </div>
+              </div>
+
+              {/* Roadmap Progress */}
+              <div>
+                <h3 className="text-xl font-bold text-text mb-4">Roadmap Progress</h3>
+                <Link
+                  href="/RoadmapPage/online-boutique"
+                  className="inline-flex items-center space-x-2 bg-primary text-baby-powder px-6 py-3 rounded-xl font-semibold hover:bg-primary-light transition-colors"
+                >
+                  <BookOpen size={20} />
+                  <span>Continue Your Roadmap</span>
+                  <ArrowRight size={16} />
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Resources Tab */}
+        {activeTab === 'resources' && (
+          <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-3xl p-8">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-text">My Resources</h2>
+              <Link
+                href="/ResourcesPage"
+                className="text-primary hover:text-primary-light transition-colors font-medium"
+              >
+                Browse All Resources →
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {savedResources.map(resource => (
+                <div
+                  key={resource.id}
+                  className="p-6 bg-baby-powder/50 rounded-2xl hover:bg-baby-powder transition-colors"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <Download className="text-primary" size={20} />
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                      {resource.type}
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-text mb-2">{resource.title}</h3>
+                  <p className="text-sm text-text/60 mb-3">Category: {resource.category}</p>
+                  <p className="text-xs text-text/50">Downloaded: {resource.downloadDate}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Achievements Tab */}
+        {activeTab === 'achievements' && (
+          <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-3xl p-8">
+            <h2 className="text-2xl font-bold text-text mb-6">Your Achievements</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {achievements.map(achievement => (
+                <div
+                  key={achievement.id}
+                  className={`p-6 rounded-2xl border-2 transition-all duration-200 ${
+                    achievement.earned
+                      ? 'bg-primary/10 border-primary/30'
+                      : 'bg-gray-50 border-gray-200 opacity-60'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
+                      achievement.earned 
+                        ? 'bg-primary text-baby-powder' 
+                        : 'bg-gray-300 text-gray-500'
+                    }`}>
+                      <achievement.icon size={24} />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-text">{achievement.title}</h3>
+                      {achievement.earned && (
+                        <p className="text-xs text-primary">Earned {achievement.date}</p>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-text/70 text-sm mb-3">{achievement.description}</p>
+                  {!achievement.earned && achievement.progress && (
+                    <p className="text-xs text-text/60">Progress: {achievement.progress}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default DashboardPage;
