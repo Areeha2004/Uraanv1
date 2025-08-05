@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
 
   const systemPrompt: OpenAI.Chat.Completions.ChatCompletionMessageParam = {
     role: "system",
-    content: "You are an expert business mentor for women in Pakistan.Give realistic and not very hard ideas. You MUST call the function generateBusinessIdea and supply ONLY the arguments object, strictly matching the format. No extra text.",
+    content: "You are an expert business mentor for housewives in Pakistan.Give realistic and low budget easy to do bussiness ideas.Also generate atleast one link of resource in every step in the roadmap and try to mention timelines.You MUST call the function generateBusinessIdea and supply ONLY the arguments object, strictly matching the format. No extra text.",
   };
 
   const userPrompt: OpenAI.Chat.Completions.ChatCompletionMessageParam = {

@@ -1,7 +1,8 @@
-"use client"
-import React, { useState } from "react";
+"use client";
+import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import Image from "next/image"; // optional, for better image handling
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 
 import {
@@ -19,36 +20,110 @@ import {
   MessageCircle,
 } from "lucide-react";
 
+type StepWithProgress = {
+  id: string;
+  stepNumber: number;
+  title: string;
+  content: string;
+  resources?: string | null;
+  userProgress: { status: string }[];
+};
+
+type UserRoadmap = {
+  id: string;
+  roadmap: {
+    id: string;
+    title: string;
+    image?: string;
+    steps: StepWithProgress[];
+  };
+};
+type Tab =
+  | "overview"
+  | "progress"
+  | "achievements"
+  | "activity"
+  | "resources"
+  | "events";
+
+// 2) Create a typed array of your tabs for rendering buttons
+const NAV_TABS: { id: Tab; label: string }[] = [
+  { id: "overview",     label: "Overview" },
+  { id: "progress",     label: " My Progress" },
+  { id: "achievements", label: "Achievements" },
+  { id: "resources",    label: "My Resources" },
+];
 const DashboardPage: React.FC = () => {
-  const { data: session, status } = useSession();
-  const [activeTab, setActiveTab] = useState("overview");
+ const router = useRouter();
 
+  // 1) require an authenticated session, else redirect to /LoginPage
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.replace("/LoginPage");
+    },
+  });
+
+  const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const [userRoadmaps, setUserRoadmaps] = useState<UserRoadmap[]>([]);
+
+  // 2) Once authenticated, fetch roadmaps
+  useEffect(() => {
+    if (status !== "authenticated") return;
+
+    // force-useSession() to revalidate the cookie if needed
+    // router.replace(router.pathname);
+
+    fetch("/api/user/roadmaps")
+      .then((res) => res.json())
+      .then((data: UserRoadmap[]) => setUserRoadmaps(data))
+      .catch(console.error);
+  }, [status]);
+
+  // 3) show a loading state while NextAuth is doing its thing
   if (status === "loading") {
-    return <p>Loading...</p>; // or your custom loader
+    return <p>Loading...</p>;
   }
 
-  if (!session) {
-    return <p>Please log in to view your dashboard.</p>;
-  }
+  // 2) Pick the first roadmap as the "primary" project
+  const primary = userRoadmaps.length > 0 ? userRoadmaps[0].roadmap : null;
 
-  // Access real user data
+  // 5) Build the userData object
   const userData = {
     name: session.user.name || "User",
-    avatar: session.user.image || "https://via.placeholder.com/150",
-    businessIdea: "Online Fashion Boutique", // or fetch user-specific data here
-    joinDate: "January 2025", // placeholder unless stored
+    avatar: session.user.image || "/fallback-avatar.png",
+    businessIdea: primary ? primary.title : "No roadmap yet",
+    roadmapId: primary?.id || "",
+    joinDate: "January 2025",
     level: "Rising Star",
     points: 750,
   };
-
-  const progressData = {
-    currentStep: 3,
-    totalSteps: 6,
-    stepTitle: "Supplier & Inventory Setup",
-    completedTasks: 8,
-    totalTasks: 12,
-    nextMilestone: "Launch Your Store",
+  // 4) Derive progressData from the primary roadmap's steps
+  let progressData = {
+    currentStep: 0,
+    totalSteps: 0,
+    stepTitle: "Not started",
+    completedTasks: 0,
+    totalTasks: 0,
+    nextMilestone: "Start your journey",
   };
+
+  if (primary) {
+   const steps = primary.steps;
+const doneCount = steps.filter(
+  s => s.userProgress[0]?.status === "done"
+).length;
+const nextStep = steps.find(s => s.userProgress[0]?.status !== "done");
+
+progressData = {
+  currentStep: doneCount,
+  totalSteps: steps.length,
+  stepTitle: nextStep ? nextStep.title : "All steps completed",
+  completedTasks: doneCount,
+  totalTasks: steps.length,
+  nextMilestone: nextStep ? nextStep.title : "Congratulations!",
+};
+  }
   const userId = session.user.id; // Get user ID from session
 
   const achievements = [
@@ -181,7 +256,9 @@ const DashboardPage: React.FC = () => {
       type: 'In-Person'
     }
   ];
-
+const overallProgress = progressData.totalSteps
+  ? Math.round((progressData.currentStep / progressData.totalSteps) * 100)
+  : 0;
   return (
     <div className="min-h-screen pt-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-base to-baby-powder">
       <div className="max-w-7xl mx-auto py-8">
@@ -221,26 +298,21 @@ const DashboardPage: React.FC = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex flex-wrap gap-4 mb-8">
-          {[
-            { id: 'overview', label: 'Overview' },
-            { id: 'progress', label: 'My Progress' },
-            { id: 'resources', label: 'My Resources' },
-            { id: 'achievements', label: 'Achievements' }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-6 py-3 rounded-2xl font-medium transition-all duration-200 ${
-                activeTab === tab.id
-                  ? 'bg-primary text-baby-powder shadow-lg'
-                  : 'bg-glass-bg backdrop-blur-sm border border-secondary/20 text-text hover:bg-secondary/20'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+       <div className="flex flex-wrap gap-4 mb-8">
+  {NAV_TABS.map((tab) => (
+    <button
+      key={tab.id}
+      onClick={() => setActiveTab(tab.id)}    // tab.id is now typed as Tab
+      className={`px-6 py-3 rounded-2xl font-medium transition-all duration-200 ${
+        activeTab === tab.id
+          ? "bg-primary text-baby-powder shadow-lg"
+          : "bg-glass-bg backdrop-blur-sm border border-secondary/20 text-text hover:bg-secondary/20"
+      }`}
+    >
+      {tab.label}
+    </button>
+  ))}
+</div>
 
         {/* Overview Tab */}
         {activeTab === 'overview' && (
@@ -252,7 +324,7 @@ const DashboardPage: React.FC = () => {
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-text">Your Progress</h2>
                   <Link
-                    href={`/RoadmapPage/${userData.businessIdea.toLowerCase().replace(/\s+/g, '-')}`}
+                    href={`/roadmaps/${userData.roadmapId}`}
                     className="text-primary hover:text-primary-light transition-colors text-sm font-medium"
                   >
                     View Full Roadmap →
@@ -290,7 +362,7 @@ const DashboardPage: React.FC = () => {
                 <h2 className="text-xl font-bold text-text mb-6">Quick Actions</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Link
-                    href="/RoadmapPage/online-boutique"
+                    href={`/roadmaps/${userData.roadmapId}`}
                     className="group p-4 bg-baby-powder/50 hover:bg-baby-powder rounded-2xl transition-all duration-200"
                   >
                     <div className="flex items-center space-x-3">
@@ -437,42 +509,57 @@ const DashboardPage: React.FC = () => {
         )}
 
         {/* Progress Tab */}
-        {activeTab === 'progress' && (
-          <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-3xl p-8">
-            <h2 className="text-2xl font-bold text-text mb-6">Your Business Journey</h2>
-            
-            <div className="space-y-8">
-              {/* Progress Overview */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center p-6 bg-baby-powder/50 rounded-2xl">
-                  <div className="text-3xl font-bold text-primary mb-2">50%</div>
-                  <div className="text-text/70">Overall Progress</div>
-                </div>
-                <div className="text-center p-6 bg-baby-powder/50 rounded-2xl">
-                  <div className="text-3xl font-bold text-primary mb-2">3/6</div>
-                  <div className="text-text/70">Steps Completed</div>
-                </div>
-                <div className="text-center p-6 bg-baby-powder/50 rounded-2xl">
-                  <div className="text-3xl font-bold text-primary mb-2">8/12</div>
-                  <div className="text-text/70">Current Step Tasks</div>
-                </div>
-              </div>
+      
+{activeTab === 'progress' && (
+  <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-3xl p-8">
+    <h2 className="text-2xl font-bold text-text mb-6">
+      Your Business Journey
+    </h2>
 
-              {/* Roadmap Progress */}
-              <div>
-                <h3 className="text-xl font-bold text-text mb-4">Roadmap Progress</h3>
-                <Link
-                  href="/RoadmapPage/online-boutique"
-                  className="inline-flex items-center space-x-2 bg-primary text-baby-powder px-6 py-3 rounded-xl font-semibold hover:bg-primary-light transition-colors"
-                >
-                  <BookOpen size={20} />
-                  <span>Continue Your Roadmap</span>
-                  <ArrowRight size={16} />
-                </Link>
-              </div>
-            </div>
+    <div className="space-y-8">
+      {/* Progress Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="text-center p-6 bg-baby-powder/50 rounded-2xl">
+          <div className="text-3xl font-bold text-primary mb-2">
+            {overallProgress}%
           </div>
-        )}
+          <div className="text-text/70">Overall Progress</div>
+        </div>
+        <div className="text-center p-6 bg-baby-powder/50 rounded-2xl">
+          <div className="text-3xl font-bold text-primary mb-2">
+            {progressData.currentStep}/{progressData.totalSteps}
+          </div>
+          <div className="text-text/70">Steps Completed</div>
+        </div>
+        <div className="text-center p-6 bg-baby-powder/50 rounded-2xl">
+          <div className="text-3xl font-bold text-primary mb-2">
+            {progressData.completedTasks}/{progressData.totalTasks}
+          </div>
+          <div className="text-text/70">Current Step Tasks</div>
+        </div>
+      </div>
+
+      {/* Current Step & Roadmap Progress */}
+      <div>
+        <h3 className="text-xl font-bold text-text mb-2">
+          Current Step: {progressData.stepTitle}
+        </h3>
+        <p className="text-text/70 mb-4">
+          Next Milestone: {progressData.nextMilestone}
+        </p>
+        <Link
+          href={primary ? `/roadmaps/${primary.id}` : "#"}
+          className="inline-flex items-center space-x-2 bg-primary text-baby-powder px-6 py-3 rounded-xl font-semibold hover:bg-primary-light transition-colors"
+        >
+          <BookOpen size={20} />
+          <span>Continue Your Roadmap</span>
+          <ArrowRight size={16} />
+        </Link>
+      </div>
+    </div>
+  </div>
+)}
+
 
         {/* Resources Tab */}
         {activeTab === 'resources' && (

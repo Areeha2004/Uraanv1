@@ -1,32 +1,36 @@
-"use client";
-
+"use client"
+import { ensureProtocol } from "@/utils/ensureProtocol";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
-  CheckCircle,
-  Download,
-  Play,
   ArrowLeft,
+  CheckCircle,
   Clock,
-  Users,
   DollarSign,
   Star,
+  Users,
+  Download,
+  Play,
 } from "lucide-react";
 
+type Progress = { status: string };
+
 interface StepType {
+  stepId: string;
   stepTitle: string;
   description: string;
   duration: string;
   tasks?: string[];
   downloadables?: string[];
   videoTutorial?: string | null;
+  userProgress: Progress[];
 }
 
 interface RoadmapDataType {
   title: string;
   description: string;
-  image: string;
+  image?: string;
   timeline: string;
   investment: string;
   difficulty: string;
@@ -34,26 +38,58 @@ interface RoadmapDataType {
   steps?: StepType[];
 }
 
+// Shape we might receive from API (id vs stepId difference)
+type ReceivedStep = Omit<StepType, "stepId" | "userProgress"> & {
+  id?: string;
+  stepId?: string;
+  userProgress?: Progress[];
+};
+
+type ServerRoadmap = Omit<RoadmapDataType, "steps"> & {
+  steps?: ReceivedStep[];
+};
+
 export default function RoadmapPage() {
-  const params = useSearchParams();
-  const roadmapParam = params.get("roadmap");
+  const { id: roadmapId } = useParams<{ id: string }>();
+
   const [roadmap, setRoadmap] = useState<RoadmapDataType | null>(null);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
 
-  // parse the URL-encoded JSON
-  useEffect(() => {
-    if (!roadmapParam) return;
-    try {
-      const decoded = decodeURIComponent(roadmapParam);
-      const parsed: RoadmapDataType = JSON.parse(decoded);
+ useEffect(() => {
+    
 
-      // ensure steps is always an array
-      parsed.steps = Array.isArray(parsed.steps) ? parsed.steps : [];
-      setRoadmap(parsed);
+  if (!roadmapId) return;
+console.log("Fetching roadmap for ID:", roadmapId);
+
+  const fetchRoadmap = async () => {
+    try {
+      const res = await fetch(`/api/user/roadmaps/${roadmapId}`, {
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Roadmap fetch failed:", res.status, text);
+        return;
+      }
+
+      const data = (await res.json()) as RoadmapDataType;
+      setRoadmap(data);
+
+      const doneIndexes = (data.steps ?? []).reduce<number[]>((acc, step, idx) => {
+        if (step.userProgress?.[0]?.status === "done") acc.push(idx);
+        return acc;
+      }, []);
+      setCompletedSteps(doneIndexes);
     } catch (err) {
-      console.error("Failed to parse roadmap param:", err);
+      console.error("Error loading roadmap:", err);
     }
-  }, [roadmapParam]);
+  };
+
+  fetchRoadmap();
+}, [roadmapId]);
+
 
   if (!roadmap) {
     return <div className="p-8 text-center">Loading roadmap…</div>;
@@ -70,10 +106,41 @@ export default function RoadmapPage() {
     steps = [],
   } = roadmap;
 
-  const toggleStep = (idx: number) => {
+  const toggleStep = async (idx: number, stepId: string): Promise<void> => {
+    const newStatus = completedSteps.includes(idx) ? "pending" : "done";
+
     setCompletedSteps((prev) =>
-      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
+      newStatus === "done" ? [...prev, idx] : prev.filter((i) => i !== idx)
     );
+
+    try {
+      const res = await fetch("/api/user/progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ stepId, status: newStatus }),
+      });
+
+      if (!res.ok) throw new Error("Progress update failed");
+
+      setRoadmap((old) =>
+        old
+          ? {
+              ...old,
+              steps: old.steps?.map((s, i) =>
+                i === idx
+                  ? { ...s, userProgress: [{ status: newStatus }] }
+                  : s
+              ),
+            }
+          : old
+      );
+    } catch (err) {
+      console.error("Failed to update progress:", err);
+      setCompletedSteps((prev) =>
+        newStatus === "done" ? prev.filter((i) => i !== idx) : [...prev, idx]
+      );
+    }
   };
 
   const completionPercentage = steps.length
@@ -129,7 +196,7 @@ export default function RoadmapPage() {
           <div className="relative">
             <div className="aspect-square rounded-3xl overflow-hidden shadow-2xl">
               <img
-                src={image}
+                src={image||"https://images.prismic.io/justremote/c0bba365-3ac6-4071-9834-32e374da043a_work-from-home.jpeg?auto=compress,format"}
                 alt={title}
                 className="w-full h-full object-cover"
               />
@@ -159,13 +226,13 @@ export default function RoadmapPage() {
 
         {/* Roadmap Steps */}
         <div className="space-y-8">
-          {steps.map((step, index) => {
-            const isCompleted = completedSteps.includes(index);
+         {steps.map((step, index) => {
+          const isCompleted = completedSteps.includes(index);
             const tasks = Array.isArray(step.tasks) ? step.tasks : [];
-            const files = Array.isArray(step.downloadables)
-              ? step.downloadables
-              : [];
-            const videoUrl = step.videoTutorial ?? "";
+             const files = Array.isArray(step.downloadables)
+    ? step.downloadables
+    : [];
+  const videoUrl = step.videoTutorial ?? "";
 
             return (
               <div
@@ -209,6 +276,7 @@ export default function RoadmapPage() {
                             <p className="text-text/70 mb-2">
                               {step.description}
                             </p>
+                            
                             <div className="flex items-center space-x-2 text-sm text-primary">
                               <Clock size={16} />
                               <span>{step.duration}</span>
@@ -216,15 +284,15 @@ export default function RoadmapPage() {
                           </div>
                         </div>
                         <button
-                          onClick={() => toggleStep(index)}
-                          className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
-                            isCompleted
-                              ? "bg-primary text-baby-powder"
-                              : "bg-secondary/20 text-text hover:bg-primary hover:text-baby-powder"
-                          }`}
-                        >
-                          {isCompleted ? "Completed" : "Mark Done"}
-                        </button>
+                onClick={() => toggleStep(index, step.stepId)}
+                className={`mt-2 px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
+                  isCompleted
+                    ? "bg-primary text-baby-powder"
+                    : "bg-secondary/20 text-text hover:bg-primary hover:text-baby-powder"
+                }`}
+              >
+                {isCompleted ? "Completed" : "Mark Done"}
+              </button>
                       </div>
 
                       {/* Tasks */}
@@ -244,35 +312,74 @@ export default function RoadmapPage() {
                       </div>
 
                       {/* Downloads & Video */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        <div>
-                          <h4 className="font-semibold text-text mb-3">
-                            Downloads:
-                          </h4>
-                          <div className="space-y-2">
-                            {files.map((file, i) => (
-                              <button
-                                key={i}
-                                className="flex items-center space-x-2 w-full p-3 bg-baby-powder/50 hover:bg-baby-powder rounded-xl transition-colors text-left"
-                              >
-                                <Download size={16} className="text-primary" />
-                                <span className="text-sm text-text">{file}</span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-text mb-3">
-                            Video Tutorial:
-                          </h4>
-                          <button className="flex items-center space-x-2 w-full p-3 bg-primary/10 hover:bg-primary/20 rounded-xl transition-colors">
-                            <Play size={16} className="text-primary" />
-                            <span className="text-sm text-primary">
-                              {videoUrl}
-                            </span>
-                          </button>
-                        </div>
-                      </div>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        {/* Downloads */}
+        <div>
+          <h4 className="font-semibold text-text mb-3">Downloads:</h4>
+
+          {files.length > 0 ? (
+            <div className="space-y-2">
+              {files.map((raw, i) => {
+                const url = ensureProtocol(raw);
+                // get last segment as label, or fall back to full URL
+                const label = url.split("/").pop() || url;
+
+                return (
+                  <a
+                    key={i}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-2 w-full p-3 bg-baby-powder/50 hover:bg-baby-powder rounded-xl transition-colors"
+                  >
+                    <Download size={16} className="text-primary" />
+                    <span className="text-sm text-text break-all">
+                      {label}
+                    </span>
+                  </a>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">
+              No downloads available.
+            </p>
+          )}
+        </div>
+
+        {/* Video Tutorial */}
+        <div>
+          <h4 className="font-semibold text-text mb-3">
+            Video Tutorial:
+          </h4>
+
+          {videoUrl ? (
+            (() => {
+              const url = ensureProtocol(videoUrl);
+              // use hostname (e.g. "youtube.com") as link text
+              const host = new URL(url).hostname.replace(/^www\./, "");
+
+              return (
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-2 w-full p-3 bg-primary/10 hover:bg-primary/20 rounded-xl transition-colors"
+                >
+                  <Play size={16} className="text-primary" />
+                  <span className="text-sm text-primary break-all">
+                    {host}
+                  </span>
+                </a>
+              );
+            })()
+          ) : (
+            <p className="text-sm text-gray-500">
+              No video tutorial available.
+            </p>
+          )}
+        </div>
+      </div>
                     </div>
                   </div>
 

@@ -7,31 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
-  image     String?
-  bio       String?
-  location  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
-  aiResponse             AIResponse?
-  businessIdeas          BusinessIdea[]
-  posts                  Post[]
-  comments               Comment[]
-  sentMessages           Message[]       @relation("SentMessages")
-  receivedMessages       Message[]       @relation("ReceivedMessages")
-  sentCollaborations     Collaboration[] @relation("CollabRequester")
-  receivedCollaborations Collaboration[] @relation("CollabReceiver")
-  rewards                Reward[]
-  userRoadmaps           UserRoadmap[]
-  progress               UserProgress[]
-  sessions               Session[]
-  accounts               Account[]
-}
 
 model AIResponse {
   id        String   @id @default(cuid())
@@ -98,14 +74,20 @@ model UserRoadmap {
 }
 
 model UserProgress {
-  id        String   @id @default(cuid())
+  id        String       @id @default(cuid())
   userId    String
   stepId    String
   status    String
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime     @updatedAt
 
   user User        @relation(fields: [userId], references: [id])
   step RoadmapStep @relation(fields: [stepId], references: [id])
+
+  @@unique([userId, stepId], name: "userId_stepId")
+}
+enum ProgressStatus {
+  pending
+  done
 }
 
 model Post {
@@ -175,21 +157,52 @@ model Resource {
   createdAt   DateTime @default(now())
 }
 
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  image          String?
+  password       String?   // nullable because OAuth users have no password
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt             
+  bio            String?
+  location       String?
+  
 
-  user User @relation(fields: [userId], references: [id])
+ 
+  aiResponse             AIResponse?
+  businessIdeas          BusinessIdea[]
+  posts                  Post[]
+  comments               Comment[]
+  sentMessages           Message[]       @relation("SentMessages")
+  receivedMessages       Message[]       @relation("ReceivedMessages")
+  sentCollaborations     Collaboration[] @relation("CollabRequester")
+  receivedCollaborations Collaboration[] @relation("CollabReceiver")
+  rewards                Reward[]
+  userRoadmaps           UserRoadmap[]
+  progress               UserProgress[]
+
+  
+  accounts       Account[]
+  sessions       Session[]
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -200,7 +213,7 @@ model Session {
   userId       String
   expires      DateTime
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -210,3 +223,6 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
+
+

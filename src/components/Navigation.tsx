@@ -4,15 +4,16 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation'; // ✅ Next’s equivalent for useLocation
 import { Menu, X, Sun, Moon, User } from 'lucide-react';
-
+import { useSession } from "next-auth/react";
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
-
+import { signOut } from "next-auth/react";
 const Navigation: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
-  const { user, isAuthenticated, logout } = useAuth();
-
+  const { user, logout } = useAuth();
+const { data: session, status } = useSession();
+  const isAuthenticated = status === "authenticated";
   // ✅ Next.js equivalent for location.pathname
   const pathname = usePathname();
 
@@ -75,11 +76,11 @@ const Navigation: React.FC = () => {
                   <span>Dashboard</span>
                 </Link>
                 <button
-                  onClick={logout}
-                  className="px-4 py-2 text-text/80 hover:text-primary transition-all duration-200"
-                >
-                  Logout
-                </button>
+            onClick={() => signOut({ callbackUrl: "/LoginPage" })}
+            className="px-4 py-2 text-text/80 hover:text-primary transition-all duration-200"
+          >
+            Logout
+          </button>
               </div>
             ) : (
               <div className="flex items-center space-x-3">
