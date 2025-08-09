@@ -335,7 +335,8 @@ const CollaborationPage: React.FC = () => {
                   </div>
 
                   {/* CTA */}
-                  <button className="w-full bg-gradient-to-r from-primary to-primary-light text-baby-powder py-3 rounded-2xl font-semibold hover:shadow-lg hover:shadow-result-cta-shadow transition-all duration-300 hover:scale-105">
+                  <button className="w-full bg-gradient-to-r from-primary to-primary-light text-baby-powder py-3 rounded-2xl font-semibold hover:shadow-lg hover:shadow-result-cta-shadow transition-all duration-300 hover:scale-105"
+                    onClick={() => window.location.href = `/CollaboratorProfilePage/${collaborator.id}`}>
                     View Profile & Hire
                   </button>
                 </div>

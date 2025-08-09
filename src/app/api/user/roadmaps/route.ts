@@ -11,6 +11,7 @@ export async function GET() {
 
   const userRoadmaps = await prisma.userRoadmap.findMany({
     where: { userId: session.user.id },
+    orderBy: { startedAt: "desc" },
     include: {
       roadmap: {
         include: {
