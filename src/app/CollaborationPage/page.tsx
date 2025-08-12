@@ -1,149 +1,164 @@
-"use client"
-import React, { useState } from 'react';
-import { Search, Filter, Star, MapPin, Clock, CheckCircle, MessageCircle, Heart } from 'lucide-react';
+"use client";
+
+import React, { useState, useEffect } from "react";
+import {
+  Search,
+  Filter,
+  Star,
+  MapPin,
+  Clock,
+  CheckCircle,
+  MessageCircle,
+  Heart,
+} from "lucide-react";
+interface PortfolioItem {
+  title: string;
+  serviceType: string;
+  url: string;
+  image?: string;
+}
+interface Collaborator {
+  id: number;
+  userId :number;
+  name: string;
+  title: string;
+  location: string;
+  avatar: string;
+  image: string;
+  rating: number;
+  reviewsCount: number;
+  completedProjects: number;
+  responseTime: string;
+  startingPrice: string;
+  category: string;
+  skills: string[];
+  portfolio: PortfolioItem[];
+  verified: boolean;
+  topRated: boolean;
+}
 
 const CollaborationPage: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedLocation, setSelectedLocation] = useState('all');
+  // fetching state
+  const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
+  // filter controls
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedLocation, setSelectedLocation] = useState<string>("all");
+
+  // static dropdown options
   const categories = [
-    { id: 'all', label: 'All Services' },
-    { id: 'design', label: 'Design & Branding' },
-    { id: 'marketing', label: 'Marketing & Social Media' },
-    { id: 'development', label: 'Web Development' },
-    { id: 'content', label: 'Content Writing' },
-    { id: 'photography', label: 'Photography' },
-    { id: 'consulting', label: 'Business Consulting' },
-    { id: 'finance', label: 'Finance & Accounting' }
+    { id: "all", label: "All Services" },
+    { id: "design", label: "Design & Branding" },
+    { id: "marketing", label: "Marketing & Social Media" },
+    { id: "development", label: "Web Development" },
+    { id: "content", label: "Content Writing" },
+    { id: "photography", label: "Photography" },
+    { id: "consulting", label: "Business Consulting" },
+    { id: "finance", label: "Finance & Accounting" },
   ];
 
   const locations = [
-    { id: 'all', label: 'All Pakistan' },
-    { id: 'karachi', label: 'Karachi' },
-    { id: 'lahore', label: 'Lahore' },
-    { id: 'islamabad', label: 'Islamabad' },
-    { id: 'faisalabad', label: 'Faisalabad' },
-    { id: 'remote', label: 'Remote Only' }
+    { id: "all", label: "All Pakistan" },
+    { id: "karachi", label: "Karachi" },
+    { id: "lahore", label: "Lahore" },
+    { id: "islamabad", label: "Islamabad" },
+    { id: "faisalabad", label: "Faisalabad" },
+    { id: "remote", label: "Remote Only" },
   ];
 
-  const collaborators = [
-    {
-      id: 1,
-      name: 'Sana Malik',
-      title: 'Brand Designer & Logo Specialist',
-      location: 'Karachi',
-      avatar: 'https://images.pexels.com/photos/3184338/pexels-photo-3184338.jpeg',
-      rating: 4.9,
-      reviews: 127,
-      completedProjects: 89,
-      responseTime: '2 hours',
-      startingPrice: '₨15,000',
-      category: 'design',
-      skills: ['Logo Design', 'Brand Identity', 'Social Media Graphics'],
-      portfolio: 'https://images.pexels.com/photos/3965545/pexels-photo-3965545.jpeg',
-      verified: true,
-      topRated: true
-    },
-    {
-      id: 2,
-      name: 'Fatima Sheikh',
-      title: 'Social Media Marketing Expert',
-      location: 'Lahore',
-      avatar: 'https://images.pexels.com/photos/3769021/pexels-photo-3769021.jpeg',
-      rating: 4.8,
-      reviews: 95,
-      completedProjects: 156,
-      responseTime: '1 hour',
-      startingPrice: '₨20,000',
-      category: 'marketing',
-      skills: ['Instagram Marketing', 'Facebook Ads', 'Content Strategy'],
-      portfolio: 'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg',
-      verified: true,
-      topRated: false
-    },
-    {
-      id: 3,
-      name: 'Ayesha Khan',
-      title: 'WordPress Developer',
-      location: 'Remote',
-      avatar: 'https://images.pexels.com/photos/3184639/pexels-photo-3184639.jpeg',
-      rating: 4.9,
-      reviews: 203,
-      completedProjects: 134,
-      responseTime: '3 hours',
-      startingPrice: '₨25,000',
-      category: 'development',
-      skills: ['WordPress', 'E-commerce', 'WooCommerce'],
-      portfolio: 'https://images.pexels.com/photos/3584994/pexels-photo-3584994.jpeg',
-      verified: true,
-      topRated: true
-    },
-    {
-      id: 4,
-      name: 'Zara Ahmed',
-      title: 'Content Writer & Copywriter',
-      location: 'Islamabad',
-      avatar: 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg',
-      rating: 4.7,
-      reviews: 78,
-      completedProjects: 112,
-      responseTime: '4 hours',
-      startingPrice: '₨8,000',
-      category: 'content',
-      skills: ['Blog Writing', 'Product Descriptions', 'Email Marketing'],
-      portfolio: 'https://images.pexels.com/photos/3992538/pexels-photo-3992538.jpeg',
-      verified: true,
-      topRated: false
-    },
-    {
-      id: 5,
-      name: 'Nadia Butt',
-      title: 'Product Photographer',
-      location: 'Karachi',
-      avatar: 'https://images.pexels.com/photos/3771124/pexels-photo-3771124.jpeg',
-      rating: 4.8,
-      reviews: 67,
-      completedProjects: 89,
-      responseTime: '6 hours',
-      startingPrice: '₨12,000',
-      category: 'photography',
-      skills: ['Product Photography', 'E-commerce Photos', 'Photo Editing'],
-      portfolio: 'https://images.pexels.com/photos/3965545/pexels-photo-3965545.jpeg',
-      verified: true,
-      topRated: false
-    },
-    {
-      id: 6,
-      name: 'Ruqaiya Ali',
-      title: 'Business Consultant',
-      location: 'Lahore',
-      avatar: 'https://images.pexels.com/photos/4145153/pexels-photo-4145153.jpeg',
-      rating: 4.9,
-      reviews: 145,
-      completedProjects: 78,
-      responseTime: '1 hour',
-      startingPrice: '₨30,000',
-      category: 'consulting',
-      skills: ['Business Strategy', 'Market Research', 'Financial Planning'],
-      portfolio: 'https://images.pexels.com/photos/3184338/pexels-photo-3184338.jpeg',
-      verified: true,
-      topRated: true
+  // fetch from API on mount
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadCollaborators() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const res = await fetch("/api/collaborators", {
+          signal: controller.signal,
+        });
+
+        if (!res.ok) {
+          throw new Error(`Failed to fetch: ${res.status}`);
+        }
+
+        const data: Collaborator[] = await res.json();
+       const mapped: Collaborator[] = data.map((entry: any) => ({
+  id: entry.id,
+  name: entry.user?.name || "", // ⬅️ grab from nested user
+  title: entry.title,
+  userId: entry.userId,
+  image: entry.user?.image ,
+  location: entry.location,
+  avatar: entry.avatar,
+  rating: entry.rating,
+  reviewsCount: entry.reviewsCount,
+  completedProjects: entry.completedProjects || 0,
+  responseTime: entry.responseTime,
+  startingPrice: entry.startingPrice,
+  category: entry.category,
+  skills: entry.skills || [],
+  portfolio: entry.portfolio,
+  verified: entry.verified,
+  topRated: entry.topRated,
+}));
+        setCollaborators(mapped);
+      } catch (err: any) {
+        if (err.name !== "AbortError") {
+          setError(err.message || "Unknown error");
+        }
+      } finally {
+        setLoading(false);
+      }
     }
-  ];
 
-  const filteredCollaborators = collaborators.filter(collaborator => {
-    const matchesSearch = collaborator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         collaborator.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         collaborator.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesCategory = selectedCategory === 'all' || collaborator.category === selectedCategory;
-    const matchesLocation = selectedLocation === 'all' || 
-                           collaborator.location.toLowerCase() === selectedLocation ||
-                           (selectedLocation === 'remote' && collaborator.location === 'Remote');
-    
-    return matchesSearch && matchesCategory && matchesLocation;
-  });
+    loadCollaborators();
+    return () => {
+      controller.abort();
+    };
+  }, []);
+
+  // client‐side filtering
+ const filteredCollaborators = collaborators.filter((c) => {
+  const term = searchTerm.trim().toLowerCase();
+
+  // Safely extract fields with fallbacks
+  const name = c.name ?? "";
+  const title = c.title ?? "";
+  const location = c.location ?? "";
+  const skills = Array.isArray(c.skills) ? c.skills : [];
+
+  // 1. Search match
+  const matchesSearch =
+    !term ||
+    name.toLowerCase().includes(term) ||
+    title.toLowerCase().includes(term) ||
+    skills.some((skill) =>
+      (skill ?? "").toLowerCase().includes(term)
+    );
+
+  // 2. Category match
+  const matchesCategory =
+    selectedCategory === "all" ||
+    c.category === selectedCategory;
+
+  // 3. Location match (allow “remote” alias)
+  const locLower = location.toLowerCase();
+  const matchesLocation =
+    selectedLocation === "all" ||
+    locLower === selectedLocation ||
+    (selectedLocation === "remote" && locLower === "remote");
+
+  return matchesSearch && matchesCategory && matchesLocation;
+});
+
+
+  // ...return JSX below
+
 
   return (
     <div className="pt-16">
@@ -244,10 +259,13 @@ const CollaborationPage: React.FC = () => {
             {filteredCollaborators.map(collaborator => (
               <div
                 key={collaborator.id}
-                className="group bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-3xl overflow-hidden hover:scale-[1.02] transition-all duration-500 hover:shadow-xl hover:shadow-glass-shadow"
+                className="group bg-glass-bg backdrop-blur-sm border border-secondary/80 rounded-3xl overflow-hidden hover:scale-[1.02] transition-all duration-500 hover:shadow-xl hover:shadow-glass-shadow"
               >
                 {/* Header */}
-                <div className="relative h-32 bg-gradient-to-br from-primary/20 to-accent2/20">
+                <div  className="relative h-32 bg-cover bg-center"
+  style={{
+    backgroundImage: `url(${collaborator.avatar})`,
+  }}>
                   <div className="absolute top-4 right-4 flex space-x-2">
                     {collaborator.verified && (
                       <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
@@ -262,10 +280,11 @@ const CollaborationPage: React.FC = () => {
                   </div>
                   <div className="absolute -bottom-8 left-6">
                     <img
-                      src={collaborator.avatar}
-                      alt={collaborator.name}
-                      className="w-16 h-16 rounded-2xl border-4 border-baby-powder object-cover"
-                    />
+  src={collaborator.image || "/default-profile.png"}
+  alt={`${collaborator.name}'s profile`}
+  className="w-16 h-16 rounded-full object-cover"
+/>
+
                   </div>
                 </div>
 
@@ -273,7 +292,7 @@ const CollaborationPage: React.FC = () => {
                 <div className="p-6 pt-12 space-y-4">
                   <div className="space-y-2">
                     <h3 className="text-lg font-bold text-text group-hover:text-primary transition-colors">
-                      {collaborator.name}
+                     {collaborator.name}
                     </h3>
                     <p className="text-text/70 text-sm">{collaborator.title}</p>
                     <div className="flex items-center space-x-2 text-sm text-text/60">
@@ -289,7 +308,7 @@ const CollaborationPage: React.FC = () => {
                         <Star className="text-yellow-400" size={14} fill="currentColor" />
                         <span className="font-semibold text-text">{collaborator.rating}</span>
                       </div>
-                      <p className="text-xs text-text/60">{collaborator.reviews} reviews</p>
+                      <p className="text-xs text-text/60">0 reviews</p>
                     </div>
                     <div className="text-center">
                       <div className="flex items-center justify-center mb-1">
@@ -325,18 +344,31 @@ const CollaborationPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Portfolio Preview */}
-                  <div className="aspect-w-16 aspect-h-9 rounded-xl overflow-hidden">
-                    <img
-                      src={collaborator.portfolio}
-                      alt="Portfolio preview"
-                      className="w-full h-24 object-cover"
-                    />
-                  </div>
+                {/* Portfolio Preview */}
+<div className="aspect-w-16 aspect-h-9 rounded-xl overflow-hidden">
+  {collaborator.portfolio?.length > 0 && collaborator.portfolio[0]?.image ? (
+    <img
+      src={collaborator.portfolio[0].image}
+      alt={collaborator.portfolio[0].title || `${collaborator.name} portfolio`}
+      className="w-full h-24 object-cover"
+    />
+  ) : collaborator.portfolio?.length > 0 && collaborator.portfolio[0]?.url ? (
+    <img
+      src={collaborator.portfolio[0].url}
+      alt={collaborator.portfolio[0].title || `${collaborator.name} portfolio`}
+      className="w-full h-24 object-cover"
+    />
+  ) : (
+    <div className="w-full h-24 bg-gray-100 flex items-center justify-center">
+      <p className="text-sm text-gray-400">No portfolio image</p>
+    </div>
+  )}
+</div>
+
 
                   {/* CTA */}
                   <button className="w-full bg-gradient-to-r from-primary to-primary-light text-baby-powder py-3 rounded-2xl font-semibold hover:shadow-lg hover:shadow-result-cta-shadow transition-all duration-300 hover:scale-105"
-                    onClick={() => window.location.href = `/CollaboratorProfilePage/${collaborator.id}`}>
+                    onClick={() => window.location.href = `/CollaboratorProfilePage/${collaborator.userId}`}>
                     View Profile & Hire
                   </button>
                 </div>
@@ -425,7 +457,8 @@ const CollaborationPage: React.FC = () => {
               <p className="text-lg text-baby-powder/90 max-w-2xl mx-auto">
                 Join our network of skilled women professionals and help other entrepreneurs succeed while building your own freelance business.
               </p>
-              <button className="bg-baby-powder text-primary px-8 py-4 rounded-2xl font-semibold text-lg hover:bg-baby-powder/90 transition-all duration-300 hover:scale-105 shadow-lg">
+              <button className="bg-baby-powder text-primary px-8 py-4 rounded-2xl font-semibold text-lg hover:bg-baby-powder/90 transition-all duration-300 hover:scale-105 shadow-lg"
+                onClick={() => window.location.href = "/BecomeCollaboratorPage"}>
                 Become a Collaborator
               </button>
             </div>

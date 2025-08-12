@@ -113,7 +113,7 @@ const HireCollaboratorModal: React.FC<HireCollaboratorModalProps> = ({ collabora
   }
 
   return (
-    <div className="fixed inset-0 bg-[#afa3c9]/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-[#afa3c9]/50 backdrop-blur-md flex items-center justify-center z-50 p-4">
       <div className="bg-glass-bg backdrop-blur-lg border border-secondary/20 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-secondary/20">

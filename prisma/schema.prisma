@@ -113,17 +113,65 @@ model Comment {
   post Post @relation(fields: [postId], references: [id])
 }
 
+enum CollaborationStatus {
+  pending
+  accepted
+  declined
+  in_progress
+  completed
+  cancelled
+}
+
 model Collaboration {
-  id          String   @id @default(cuid())
-  requesterId String
-  receiverId  String
-  status      String
-  message     String?
-  createdAt   DateTime @default(now())
+  id                 String              @id @default(cuid())
+  requesterId        String
+  receiverId         String
+  status             CollaborationStatus @default(pending)
+  projectDescription String?
+  budget             Float?
+  deadline           DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
 
   requester User @relation("CollabRequester", fields: [requesterId], references: [id])
   receiver  User @relation("CollabReceiver", fields: [receiverId], references: [id])
+  review    Review?
+
+  @@index([requesterId])
+  @@index([receiverId])
 }
+
+model CollaboratorProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  title          String
+  avatar         String?     
+  skills         String[]
+  portfolio      Json     // store array of objects: [{title, serviceType, url, image}]
+  rating         Float    @default(0)
+  reviewsCount   Int      @default(0)
+  verified       Boolean  @default(false)
+  topRated       Boolean  @default(false)
+  responseTime   String
+  startingPrice  String
+  location       String?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([location])
+  @@index([rating])
+}
+
+model Review {
+  id              String        @id @default(cuid())
+  collaborationId String        @unique
+  rating          Int           // 1 to 5, you can validate in your app logic
+  comment         String?
+  createdAt       DateTime      @default(now())
+
+  collaboration   Collaboration @relation(fields: [collaborationId], references: [id])
+}
+
 
 model Message {
   id         String   @id @default(cuid())
@@ -163,14 +211,14 @@ model User {
   email          String?   @unique
   emailVerified  DateTime?
   image          String?
-  password       String?   // nullable because OAuth users have no password
+  password       String?   // nullable for OAuth users
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt             
   bio            String?
   location       String?
-  
 
- 
+  collaboratorProfile CollaboratorProfile?
+
   aiResponse             AIResponse?
   businessIdeas          BusinessIdea[]
   posts                  Post[]
@@ -183,10 +231,10 @@ model User {
   userRoadmaps           UserRoadmap[]
   progress               UserProgress[]
 
-  
   accounts       Account[]
   sessions       Session[]
 }
+
 
 model Account {
   id                 String  @id @default(cuid())

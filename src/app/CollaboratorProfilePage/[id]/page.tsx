@@ -1,78 +1,74 @@
-"use client"
-import React, { useState } from 'react';
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
-import { 
-  ArrowLeft, 
-  Star, 
-  MapPin, 
-  Clock, 
-  CheckCircle, 
-  Award, 
-  MessageCircle, 
+"use client";
+import React, { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  Star,
+  MapPin,
+  Clock,
+  CheckCircle,
+  Award,
+  MessageCircle,
   Heart,
   Download,
   ExternalLink,
   Calendar,
-  DollarSign
-} from 'lucide-react';
-import HireCollaboratorModal from '../../../components/collaboration/HireCollaboratorModal';
+  DollarSign,
+} from "lucide-react";
+import HireCollaboratorModal from "../../../components/collaboration/HireCollaboratorModal";
+interface Review {
+  id: number;
+  client: string;
+  rating: number;
+  comment: string;
+  project: string;
+  date: string;
+  avatar: string;
+}
+interface Package {
+  name: string;
+  price: string;
+  deliveryTime: string;
+  features: string[];
+}
 
-const CollaboratorProfilePage: React.FC = () => {
+interface PortfolioItem {
+  id: number;
+  title: string;
+  image: string;
+  category: string;
+}
+
+interface Collaborator {
+ id: number;
+  userId :number;
+  name: string;
+  title: string;
+  location: string;
+  avatar: string;
+  image: string;
+  rating: number;
+  reviewsCount: number;
+  completedProjects?: number;
+  responseTime: string;
+  startingPrice: string;
+  category?: string;
+  skills: string[];
+  portfolio: PortfolioItem[];
+  verified: boolean;
+  topRated: boolean;
+}
+ const CollaboratorProfilePage: React.FC = () => {
   const { id } = useParams();
   const [showHireModal, setShowHireModal] = useState(false);
-  const [activeTab, setActiveTab] = useState('portfolio');
+  const [activeTab, setActiveTab] = useState("portfolio");
+  const [collaborator, setCollaborator] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data - in real app, fetch based on ID
-  const collaborator = {
-    id: '1',
-    name: 'Sana Malik',
-    title: 'Brand Designer & Logo Specialist',
-    location: 'Karachi, Pakistan',
-    avatar: 'https://images.pexels.com/photos/3184338/pexels-photo-3184338.jpeg',
-    coverImage: 'https://images.pexels.com/photos/3965545/pexels-photo-3965545.jpeg',
-    completedProjects: 89,
-    responseTime: '2 hours',
-    startingPrice: '₨15,000',
-    verified: true,
-    topRated: true,
-    joinedDate: 'January 2023',
-    bio: 'I\'m a passionate brand designer with over 5 years of experience helping Pakistani businesses create memorable visual identities. I specialize in logo design, brand guidelines, and social media graphics that resonate with local and international audiences.',
-    skills: [
-      'Logo Design', 'Brand Identity', 'Social Media Graphics', 'Print Design',
-      'Adobe Illustrator', 'Adobe Photoshop', 'Figma', 'Brand Strategy'
-    ],
-    languages: ['English', 'Urdu', 'Hindi'],
-    portfolio: [
-      {
-        id: 1,
-        title: 'Zara Boutique Brand Identity',
-        image: 'https://images.pexels.com/photos/3965545/pexels-photo-3965545.jpeg',
-        category: 'Brand Identity'
-      },
-      {
-        id: 2,
-        title: 'Tech Startup Logo Design',
-        image: 'https://images.pexels.com/photos/3584994/pexels-photo-3584994.jpeg',
-        category: 'Logo Design'
-      },
-      {
-        id: 3,
-        title: 'Restaurant Menu Design',
-        image: 'https://images.pexels.com/photos/3992538/pexels-photo-3992538.jpeg',
-        category: 'Print Design'
-      },
-      {
-        id: 4,
-        title: 'Social Media Campaign',
-        image: 'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg',
-        category: 'Social Media'
-      }
-    ],
-    rating: 4.9,
-  totalReviews: 127, // renamed from reviews to avoid conflict
-  reviews: [
-    {
+  // Static fields for now
+  const staticReviews = [
+     {
       id: 1,
       client: 'Fatima Ahmed',
       rating: 5,
@@ -99,9 +95,10 @@ const CollaboratorProfilePage: React.FC = () => {
       date: '2 months ago',
       avatar: 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg',
     },
-  ],
-    packages: [
-      {
+  ];
+  const languages = ['English', 'Urdu', 'Punjabi'];
+  const staticPackages = [
+     {
         name: 'Basic Logo',
         price: '₨15,000',
         deliveryTime: '3 days',
@@ -119,10 +116,62 @@ const CollaboratorProfilePage: React.FC = () => {
         deliveryTime: '14 days',
         features: ['5 Logo concepts', 'Complete brand identity', 'Marketing materials', 'Website mockups', '6 months support']
       }
-    ]
-  };
+  ];
+
+  useEffect(() => {
+  async function fetchData() {
+    try {
+      const res = await fetch(`/api/collaborators/${id}`);
+      if (!res.ok) throw new Error("Failed to fetch collaborator");
+
+      const entry = await res.json();
+
+      const mapped: Collaborator = {
+        id: entry.id,
+        userId: entry.userId,
+        name: entry.user?.name || "",
+        title: entry.title || "",
+        location: entry.location || entry.user?.location || "",
+        avatar: entry.avatar || entry.user?.image || "",
+        image: entry.user.image || entry.user?.avatar || "",
+        rating: entry.rating || 0,
+        reviewsCount: entry.reviewsCount || 0,
+        responseTime: entry.responseTime || "",
+        startingPrice: entry.startingPrice || "",
+        skills: entry.skills || [],
+      portfolio: (entry.portfolio || []).map((p: any) => ({
+  title: p.title || "",
+  serviceType: p.serviceType || "",
+  url: p.url || "",
+  image: (p.image && p.image.trim() !== "") ? p.image : p.url || "", // fallback to url
+})),
+
+
+        verified: !!entry.verified,
+        topRated: !!entry.topRated,
+      };
+
+      setCollaborator(mapped);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (id) fetchData();
+}, [id]);
+
+if (loading) {
+  return <div className="p-6 text-center">Loading...</div>;
+}
+
+if (!collaborator) {
+  return <div className="p-6 text-center text-red-500">Collaborator not found</div>;
+}
 
   return (
+    
     <div className="pt-16 min-h-screen bg-gradient-to-br from-base to-baby-powder">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
@@ -137,9 +186,10 @@ const CollaboratorProfilePage: React.FC = () => {
         {/* Header Section */}
         <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-3xl overflow-hidden mb-8">
           {/* Cover Image */}
+          
           <div className="relative h-48 md:h-64">
             <img
-              src={collaborator.coverImage}
+              src={collaborator.avatar}
               alt="Cover"
               className="w-full h-full object-cover"
             />
@@ -168,7 +218,7 @@ const CollaboratorProfilePage: React.FC = () => {
               {/* Avatar */}
               <div className="relative">
                 <img
-                  src={collaborator.avatar}
+                  src={collaborator.image}
                   alt={collaborator.name}
                   className="w-32 h-32 rounded-3xl border-4 border-baby-powder object-cover shadow-xl"
                 />
@@ -267,37 +317,43 @@ const CollaboratorProfilePage: React.FC = () => {
             </div>
 
             {/* Portfolio Tab */}
-            {activeTab === 'portfolio' && (
-              <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-text">Portfolio</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {collaborator.portfolio.map(item => (
-                    <div
-                      key={item.id}
-                      className="group bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-2xl overflow-hidden hover:scale-[1.02] transition-all duration-300"
-                    >
-                      <div className="relative h-48">
-                        <img
-                          src={item.image}
-                          alt={item.title}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-accent1/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <button className="w-10 h-10 bg-baby-powder rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
-                            <ExternalLink size={16} className="text-primary" />
-                          </button>
-                        </div>
-                      </div>
-                      <div className="p-4">
-                        <h4 className="font-semibold text-text mb-1">{item.title}</h4>
-                        <p className="text-sm text-primary">{item.category}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+{activeTab === 'portfolio' && (
+  <div className="space-y-6">
+    <h3 className="text-2xl font-bold text-text">Portfolio</h3>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {collaborator.portfolio.map((item: PortfolioItem, index: number) => {
+        const imageSrc = item.image && item.image.trim() !== '' 
+          ? item.image 
+          : '/placeholder-image.jpg'; // fallback placeholder
+
+        return (
+          <div
+            key={item.id ?? `${item.title}-${index}`}
+            className="group bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-2xl overflow-hidden hover:scale-[1.02] transition-all duration-300"
+          >
+            <div className="relative h-48">
+              <img
+                src={imageSrc}
+                alt={item.title || 'Portfolio item'}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-accent1/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <button className="w-10 h-10 bg-baby-powder rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+                  <ExternalLink size={16} className="text-primary" />
+                </button>
               </div>
-            )}
+            </div>
+            <div className="p-4">
+              <h4 className="font-semibold text-text mb-1">{item.title}</h4>
+              <p className="text-sm text-primary">{item.category}</p>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+)}
 
             {/* About Tab */}
             {activeTab === 'about' && (
@@ -310,7 +366,7 @@ const CollaboratorProfilePage: React.FC = () => {
                 <div>
                   <h4 className="text-lg font-semibold text-text mb-3">Skills & Expertise</h4>
                   <div className="flex flex-wrap gap-2">
-                    {collaborator.skills.map((skill, index) => (
+                    {collaborator.skills.map((skill: string, index: number) => (
                       <span
                         key={index}
                         className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium"
@@ -324,7 +380,7 @@ const CollaboratorProfilePage: React.FC = () => {
                 <div>
                   <h4 className="text-lg font-semibold text-text mb-3">Languages</h4>
                   <div className="flex space-x-4">
-                    {collaborator.languages.map((language, index) => (
+                    {languages.map((language: string, index: number) => (
                       <span
                         key={index}
                         className="px-3 py-1 bg-secondary/20 text-text rounded-lg text-sm"
@@ -342,7 +398,7 @@ const CollaboratorProfilePage: React.FC = () => {
               <div className="space-y-6">
                 <h3 className="text-2xl font-bold text-text">Client Reviews</h3>
                 <div className="space-y-6">
-                  {collaborator.reviews.map(review => (
+                  {staticReviews.map((review: Review) => (
                     <div
                       key={review.id}
                       className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-2xl p-6"
@@ -381,7 +437,7 @@ const CollaboratorProfilePage: React.FC = () => {
             <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-3xl p-6">
               <h3 className="text-lg font-bold text-text mb-4">Service Packages</h3>
               <div className="space-y-4">
-                {collaborator.packages.map((pkg, index) => (
+                {staticPackages.map((pkg : Package, index: number) => (
                   <div
                     key={index}
                     className="border border-secondary/20 rounded-2xl p-4 hover:border-primary/30 transition-colors"
@@ -392,7 +448,7 @@ const CollaboratorProfilePage: React.FC = () => {
                     </div>
                     <p className="text-sm text-text/60 mb-3">{pkg.deliveryTime} delivery</p>
                     <ul className="space-y-1">
-                      {pkg.features.map((feature, idx) => (
+                      {pkg.features.map((feature: string, idx: number) => (
                         <li key={idx} className="text-sm text-text/70 flex items-center space-x-2">
                           <CheckCircle size={12} className="text-green-500" />
                           <span>{feature}</span>
