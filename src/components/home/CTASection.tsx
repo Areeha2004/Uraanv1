@@ -1,6 +1,5 @@
 import React from 'react';
 import Link from 'next/link';
-
 import { ArrowRight, Sparkles } from 'lucide-react';
 
 const CTASection: React.FC = () => {

@@ -96,7 +96,7 @@ const DashboardPage: React.FC = () => {
     roadmapId: primary?.id || "",
     joinDate: "January 2025",
     level: "Rising Star",
-    points: 750,
+    points: 0,
   };
   // 4) Derive progressData from the primary roadmap's steps
   let progressData = {
