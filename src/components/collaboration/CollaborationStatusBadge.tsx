@@ -1,17 +1,25 @@
+// CollaborationStatusBadge.tsx
 import React from 'react';
 import { Clock, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 
 interface CollaborationStatusBadgeProps {
-  status: 'pending' | 'accepted' | 'in-progress' | 'in_progress' | 'completed' | 'declined' | 'cancelled';
+  status:
+    | 'pending'
+    | 'accepted'
+    | 'declined'
+    | 'in_progress'
+    | 'completed'
+    | 'cancelled'
+    | string; // allow unknown strings gracefully
   size?: 'sm' | 'md' | 'lg';
 }
 
-const CollaborationStatusBadge: React.FC<CollaborationStatusBadgeProps> = ({ 
-  status, 
-  size = 'md' 
+const CollaborationStatusBadge: React.FC<CollaborationStatusBadgeProps> = ({
+  status,
+  size = 'md'
 }) => {
-  const getStatusConfig = (status: string) => {
-    switch (status) {
+  const getStatusConfig = (s: string) => {
+    switch (s) {
       case 'pending':
         return {
           icon: Clock,
@@ -24,7 +32,7 @@ const CollaborationStatusBadge: React.FC<CollaborationStatusBadgeProps> = ({
           label: 'Accepted',
           className: 'bg-blue-100 text-blue-700 border-blue-200'
         };
-      case 'in-progress':
+      case 'in_progress':
         return {
           icon: AlertCircle,
           label: 'In Progress',
@@ -40,6 +48,12 @@ const CollaborationStatusBadge: React.FC<CollaborationStatusBadgeProps> = ({
         return {
           icon: XCircle,
           label: 'Cancelled',
+          className: 'bg-red-100 text-red-700 border-red-200'
+        };
+      case 'declined':
+        return {
+          icon: XCircle,
+          label: 'Declined',
           className: 'bg-red-100 text-red-700 border-red-200'
         };
       default:
@@ -67,7 +81,9 @@ const CollaborationStatusBadge: React.FC<CollaborationStatusBadgeProps> = ({
   const Icon = config.icon;
 
   return (
-    <span className={`inline-flex items-center space-x-1 rounded-full font-medium border ${config.className} ${sizeClasses[size]}`}>
+    <span
+      className={`inline-flex items-center space-x-1 rounded-full font-medium border ${config.className} ${sizeClasses[size]}`}
+    >
       <Icon size={iconSizes[size]} />
       <span>{config.label}</span>
     </span>

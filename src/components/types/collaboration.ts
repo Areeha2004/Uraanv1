@@ -9,6 +9,8 @@ export type CollaborationStatus =
 
 export interface Collaboration {
   id: string;
+  title: string;
+  contactMethod?: string; 
   requesterId: string;
   receiverId: string;
   status: CollaborationStatus;

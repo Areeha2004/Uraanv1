@@ -358,12 +358,32 @@ const MyCollaborationsPage: React.FC = () => {
               )}
             </div>
           ) : (
-            <CollaborationTable
-              collaborations={collaborations}
-              currentUserId={currentUserId}
-              getCollaboratorInfo={getCollaboratorInfo}
-              formatDaysLeft={formatDaysLeft}
-            />
+            // inside page.tsx where you render CollaborationTable (replace the existing call)
+<CollaborationTable
+  collaborations={collaborations}
+  currentUserId={currentUserId}
+  getCollaboratorInfo={getCollaboratorInfo}
+  formatDaysLeft={formatDaysLeft}
+  onUpdateCollaboration={(updated) => {
+    // update local state to keep view consistent after action
+    setCollaborations((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+    // also refresh activeCollaborations if needed:
+    setActiveCollaborations((prev) => {
+      const exists = prev.find((p) => p.id === updated.id);
+      if (exists) return prev.map((p) => (p.id === updated.id ? updated : p));
+      // if status moved to in_progress or accepted and should be in active list, optionally add it
+      if (updated.status === 'in_progress' || updated.status === 'accepted') {
+        return [updated, ...prev];
+      }
+      // if status moved out of active set (completed/cancelled), remove it
+      if (updated.status === 'completed' || updated.status === 'cancelled' || updated.status === 'declined') {
+        return prev.filter((p) => p.id !== updated.id);
+      }
+      return prev;
+    });
+  }}
+/>
+
           )}
         </div>
       </div>
