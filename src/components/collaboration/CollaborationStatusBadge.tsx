@@ -2,7 +2,7 @@ import React from 'react';
 import { Clock, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 
 interface CollaborationStatusBadgeProps {
-  status: 'pending' | 'accepted' | 'in-progress' | 'completed' | 'cancelled';
+  status: 'pending' | 'accepted' | 'in-progress' | 'in_progress' | 'completed' | 'declined' | 'cancelled';
   size?: 'sm' | 'md' | 'lg';
 }
 

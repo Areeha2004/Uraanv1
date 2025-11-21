@@ -26,6 +26,7 @@ const { data: session, status } = useSession();
     { path: '/ExplorePage', label: 'Explore Ideas' },
     { path: '/CommunityPage', label: 'Community' },
     { path: '/CollaborationPage', label: 'Collaborate' },
+    { path: '/MyCollaborationsPage', label: 'My Collaborations' },
   ];
 
   return (

@@ -112,7 +112,6 @@ model Comment {
   user User @relation(fields: [userId], references: [id])
   post Post @relation(fields: [postId], references: [id])
 }
-
 enum CollaborationStatus {
   pending
   accepted
@@ -126,19 +125,20 @@ model Collaboration {
   id                 String              @id @default(cuid())
   requesterId        String
   receiverId         String
+  role               String? // "requester" or "receiver"
+  title              String? // project title
   status             CollaborationStatus @default(pending)
   projectDescription String?
-  budget             Float?
+  budget             String? // can store numeric or ranges
   deadline           DateTime?
+  contactMethod      String?
+  additionalInfo     String?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
 
   requester User @relation("CollabRequester", fields: [requesterId], references: [id])
   receiver  User @relation("CollabReceiver", fields: [receiverId], references: [id])
   review    Review?
-
-  @@index([requesterId])
-  @@index([receiverId])
 }
 
 model CollaboratorProfile {
@@ -147,7 +147,7 @@ model CollaboratorProfile {
   title          String
   avatar         String?     
   skills         String[]
-  portfolio      Json     // store array of objects: [{title, serviceType, url, image}]
+  portfolio      Json
   rating         Float    @default(0)
   reviewsCount   Int      @default(0)
   verified       Boolean  @default(false)

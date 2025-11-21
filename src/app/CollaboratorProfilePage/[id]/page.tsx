@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import {
   ArrowLeft,
   Star,
@@ -41,8 +42,8 @@ interface PortfolioItem {
 }
 
 interface Collaborator {
- id: number;
-  userId :number;
+ id: string;      // was number
+  userId: string;
   name: string;
   title: string;
   location: string;
@@ -65,8 +66,14 @@ interface Collaborator {
   const [activeTab, setActiveTab] = useState("portfolio");
   const [collaborator, setCollaborator] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+const { data: session, status } = useSession();
 
-  // Static fields for now
+// Only calculate when both are loaded
+const userIsHiring =
+  status === "authenticated" &&
+  collaborator?.userId && // ensures collaborator is defined
+  session.user.id !== collaborator.userId;
+
   const staticReviews = [
      {
       id: 1,
@@ -127,8 +134,8 @@ interface Collaborator {
       const entry = await res.json();
 
       const mapped: Collaborator = {
-        id: entry.id,
-        userId: entry.userId,
+        id: String(entry.id || entry.id,),
+       userId: String(entry.userId || entry.user?.id || ""),
         name: entry.user?.name || "",
         title: entry.title || "",
         location: entry.location || entry.user?.location || "",
@@ -505,13 +512,65 @@ if (!collaborator) {
         </div>
       </div>
 
-      {/* Hire Modal */}
-      {showHireModal && (
-        <HireCollaboratorModal
-          collaborator={collaborator}
-          onClose={() => setShowHireModal(false)}
-        />
-      )}
+     
+{showHireModal && (
+  <HireCollaboratorModal
+    collaborator={{
+      id: String(collaborator.userId), // 🔥 this must be a valid User.id
+      name: collaborator.name,
+      title: collaborator.title,
+      avatar: collaborator.avatar,
+      startingPrice: collaborator.startingPrice,
+    }}
+    role={userIsHiring ? "requester" : "receiver"} // ✅ API enum
+    onClose={() => setShowHireModal(false)}
+    onSubmit={async ({
+      id,
+      role,
+      projectTitle,
+      projectDescription,
+      budget,
+      deadline,
+      contactMethod,
+      additionalInfo,
+    }) => {
+      try {
+        const res = await fetch("/api/collaborations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id, // ✅ collaborator User.id
+            role, // "requester" | "receiver"
+            projectTitle,
+            projectDescription,
+            budget,
+            deadline, // ISO or null
+            contactMethod,
+            additionalInfo: additionalInfo?.trim() || null,
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err?.error || "Failed to create collaboration");
+        }
+
+        alert("Collaboration request sent successfully!");
+        setShowHireModal(false);
+      } catch (error) {
+        console.error("Error creating collaboration:", error);
+        alert(
+          error instanceof Error
+            ? error.message
+            : "Failed to send request. Please try again."
+        );
+      }
+    }}
+  />
+)}
+
+
+      
     </div>
   );
 };

@@ -1,44 +1,29 @@
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]/route';
+// /api/collaborations/route.ts
 
-// GET — List collaborations for logged-in user
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/route";
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
+    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-    const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status'); // optional filter
-    const role = searchParams.get('role');     // optional filter: "requester" | "receiver"
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status");
+    const role = url.searchParams.get("role");
 
-    let whereClause: any = {};
+    const whereClause: any = {};
 
-    if (role === 'requester') {
-      whereClause.requesterId = user.id;
-    } else if (role === 'receiver') {
-      whereClause.receiverId = user.id;
-    } else {
-      // Default: show both sent and received collaborations
-      whereClause.OR = [
-        { requesterId: user.id },
-        { receiverId: user.id },
-      ];
-    }
+    if (role === "requester") whereClause.requesterId = user.id;
+    else if (role === "receiver") whereClause.receiverId = user.id;
+    else whereClause.OR = [{ requesterId: user.id }, { receiverId: user.id }];
 
-    if (status) {
-      whereClause.status = status as any;
-    }
+    if (status) whereClause.status = status;
 
     const collaborations = await prisma.collaboration.findMany({
       where: whereClause,
@@ -46,12 +31,62 @@ export async function GET(request: NextRequest) {
         requester: { select: { id: true, name: true, image: true } },
         receiver: { select: { id: true, name: true, image: true } },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     return NextResponse.json(collaborations);
   } catch (error) {
-    console.error('Error fetching collaborations:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error("GET /collaborations error:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
+    console.log("POST payload:", body); // Debug trace
+
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
+    const {
+      id: collaboratorId,
+      role,
+      projectTitle,
+      projectDescription,
+      budget,
+      deadline,
+      contactMethod,
+      additionalInfo,
+    } = body;
+
+    if (!role || !collaboratorId) {
+      return NextResponse.json({ error: "Missing required fields: role or collaborator id" }, { status: 400 });
+    }
+
+    const requesterId = role === "requester" ? user.id : collaboratorId;
+    const receiverId = role === "requester" ? collaboratorId : user.id;
+
+    const collaboration = await prisma.collaboration.create({
+      data: {
+        requesterId,
+        receiverId,
+        role,
+        title: projectTitle ?? null,
+        projectDescription: projectDescription ?? null,
+        budget: budget ? String(budget) : null,
+        deadline: deadline ? new Date(deadline) : null,
+        contactMethod: contactMethod ?? null,
+        additionalInfo: additionalInfo ?? null,
+      },
+    });
+
+    return NextResponse.json(collaboration, { status: 201 });
+  } catch (error) {
+    console.error("POST /collaborations error:", error);
+    return NextResponse.json({ error: "Failed to create collaboration" }, { status: 500 });
   }
 }
