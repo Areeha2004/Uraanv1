@@ -10,7 +10,7 @@ import bcrypt                         from "bcrypt";
 /* ------------------------------------------------------------------ */
 /*  MAIN CONFIG                                                        */
 /* ------------------------------------------------------------------ */
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
 
   session: {
@@ -24,9 +24,6 @@ export const authOptions: NextAuthOptions = {
   },
 
   providers: [
-    /* ────────────────────────────────────────────────────────────────
-       1️⃣ CREDENTIALS
-    ──────────────────────────────────────────────────────────────────*/
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -52,14 +49,9 @@ export const authOptions: NextAuthOptions = {
           name:     user.name ?? null,
           email:    user.email ?? null,
           image:    user.image ?? null,
-         
         };
       },
     }),
-
-    /* ────────────────────────────────────────────────────────────────
-       2️⃣ GOOGLE OAUTH
-    ──────────────────────────────────────────────────────────────────*/
     GoogleProvider({
       clientId:     process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
@@ -69,7 +61,6 @@ export const authOptions: NextAuthOptions = {
           name:     profile.name,
           email:    profile.email,
           image:    profile.picture,
-          
         };
       },
       authorization: {
@@ -81,28 +72,16 @@ export const authOptions: NextAuthOptions = {
         },
       },
     }),
-
-    /* ────────────────────────────────────────────────────────────────
-       3️⃣ FACEBOOK OAUTH
-    ──────────────────────────────────────────────────────────────────*/
     FacebookProvider({
       clientId:     process.env.FACEBOOK_CLIENT_ID!,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
     }),
   ],
 
-  /* -----------------------------------------------------------------
-     CALLBACKS
-  ------------------------------------------------------------------ */
   callbacks: {
-    /* ────────────────────────────────────────────────────────────────
-       A. signIn — safest-possible linking logic
-    ──────────────────────────────────────────────────────────────────*/
     async signIn({ user, account }) {
-      /* 👉 extra null-guard so TypeScript never sees undefined */
       if (!account || account.provider === "credentials") return true;
 
-      /* A-1: exact (provider, providerAccountId) match? */
       const linked = await prisma.account.findUnique({
         where: {
           provider_providerAccountId: {
@@ -114,11 +93,10 @@ export const authOptions: NextAuthOptions = {
       });
 
       if (linked) {
-        user.id = linked.userId; // legit re-login
+        user.id = linked.userId;
         return true;
       }
 
-      /* A-2: fallback to email if that email exists */
       if (user.email) {
         const byEmail = await prisma.user.findUnique({
           where: { email: user.email },
@@ -138,13 +116,9 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
-      /* If no match, PrismaAdapter will create new User + Account */
       return true;
     },
 
-    /* ────────────────────────────────────────────────────────────────
-       B. jwt — persist user + provider info
-    ──────────────────────────────────────────────────────────────────*/
     async jwt({ token, user, account }) {
       if (user) {
         token.id      = user.id;
@@ -156,9 +130,6 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
 
-    /* ────────────────────────────────────────────────────────────────
-       C. session — expose to client
-    ──────────────────────────────────────────────────────────────────*/
     async session({ session, token }) {
       if (session.user) {
         session.user.id       = token.id as string;
@@ -168,9 +139,6 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
 
-    /* ────────────────────────────────────────────────────────────────
-       D. redirect — only same-origin
-    ──────────────────────────────────────────────────────────────────*/
     async redirect({ url, baseUrl }) {
       return url.startsWith(baseUrl) ? url : baseUrl;
     },
@@ -181,7 +149,7 @@ export const authOptions: NextAuthOptions = {
 };
 
 /* ------------------------------------------------------------------ */
-/*  EXPORT HANDLER                                                    */
+/*  EXPORT HANDLER FOR APP ROUTER                                       */
 /* ------------------------------------------------------------------ */
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
