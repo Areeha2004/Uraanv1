@@ -112,8 +112,8 @@ export async function POST(request: NextRequest, { params }: { params: Params })
         requesterId: requester.id,
         receiverId: collaborator.userId,
         projectDescription: body.projectDescription,
-        budget: body.budget ? parseFloat(body.budget.toString()) : undefined,
-        deadline: body.deadline ? new Date(body.deadline) : undefined,
+        budget: body.budget !== undefined && body.budget !== null ? body.budget.toString() : undefined,
+          deadline: body.deadline ? new Date(body.deadline) : undefined,
       },
     });
 
