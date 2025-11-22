@@ -20,15 +20,20 @@ const LoginPage: React.FC = () => {
 const [msg,      setMsg]      = useState<string | null>(null);
   // clear stale OAuth session on mismatch
   useEffect(() => {
-    if (typeof window !== "undefined" && (error === "OAuthAccountNotLinked" || error === "SessionRequired")) {
+    if (
+      typeof window !== "undefined" &&
+      (error === "OAuthAccountNotLinked" || error === "SessionRequired")
+    ) {
       signOut({ callbackUrl: "/LoginPage" });
     }
   }, [error]);
 
 
   useEffect(() => {
-    if (reset) router.replace("/LoginPage");
-  }, [reset, router]);
+    if (typeof window !== "undefined" && reset) {
+      router.replace("/LoginPage");
+    }
+  }, [reset]);
 
   // ← NEW handler
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

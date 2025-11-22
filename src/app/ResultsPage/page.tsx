@@ -104,10 +104,11 @@ const hasFetched = useRef(false)
 
   useEffect(() => {
     if (!hasFetched.current) {
-      hasFetched.current = true
-      fetchIdeas()
+      hasFetched.current = true;
+      fetchIdeas();
     }
-  }, [searchParams])
+  }, []); // empty dependency array → runs only once
+
 
 
   if (loading)
