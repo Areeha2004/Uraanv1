@@ -10,9 +10,17 @@ export const dynamic = "force-dynamic";
 
 const LoginPage: React.FC = () => {
   const router = useRouter();
-  const params = useSearchParams();
-  // params is a client hook — safe when file is client
-  const error = params?.get?.("error") ?? null;
+  // remove: const params = useSearchParams();
+  // remove: const error = params?.get?.("error") ?? null;
+
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const p = new URLSearchParams(window.location.search);
+    setError(p.get("error"));
+  }, []);
+
 
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);

@@ -1,16 +1,11 @@
 "use client";
 export const dynamic = "force-dynamic";
-import { useRef,useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+
+import { useRef, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import ResultCard from "../../components/results/ResultCard";
 import { parseQuizData } from "../../utils/parseQuizData";
-import {
-  ArrowRight,
-  Clock,
-  Users,
-  TrendingUp,
-  Star,
-} from "lucide-react";
+import { ArrowRight, Clock, Users, TrendingUp, Star } from "lucide-react";
 import Link from "next/link";
 
 interface RoadmapStep {
@@ -38,19 +33,29 @@ interface BusinessIdea {
 }
 
 export default function ResultsPage() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-const hasFetched = useRef(false)
+  const hasFetched = useRef(false);
+
   const [loading, setLoading] = useState(true);
   const [ideas, setIdeas] = useState<BusinessIdea[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  // Client-only holder for the raw "parsed" query param
+  const [rawParsedParam, setRawParsedParam] = useState<string | null>(null);
+
+  // Populate rawParsedParam from window.location (avoids useSearchParams SSR bailout)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const p = new URLSearchParams(window.location.search);
+    setRawParsedParam(p.get("parsed"));
+  }, []);
 
   // Fetch AI-generated ideas + raw roadmap steps
   const fetchIdeas = async () => {
     setLoading(true);
     setError(null);
     try {
-      const raw = searchParams.get("parsed") ?? "";
+      const raw = rawParsedParam ?? "";
       const parsed = parseQuizData(raw);
 
       const res = await fetch("/api/generate", {
@@ -75,22 +80,18 @@ const hasFetched = useRef(false)
       }
 
       const idea: BusinessIdea = {
-        id: data.businessCard.title
-          .toLowerCase()
-          .replace(/\s+/g, "-"),
-        title: data.businessCard.title,
-        description: data.businessCard.description,
+        id: data.businessCard.title?.toLowerCase().replace(/\s+/g, "-") ?? String(Date.now()),
+        title: data.businessCard.title ?? "Untitled",
+        description: data.businessCard.description ?? "",
         match: 95,
-        timeline: data.businessCard.timeline,
-        investment: data.businessCard.investment,
-        potential: data.businessCard.potential,
+        timeline: data.businessCard.timeline ?? "",
+        investment: data.businessCard.investment ?? "",
+        potential: data.businessCard.potential ?? "",
         platforms: data.businessCard.keyPlatforms || [],
-        benefits: [data.businessCard.whyThisWorksForYou],
+        benefits: [data.businessCard.whyThisWorksForYou].filter(Boolean) as string[],
         keywords: data.businessCard.keywords || ["business"],
-        image: `https://source.unsplash.com/featured/?${
-          data.businessCard.keywords?.[0] || "business"
-        }`,
-        roadmap: data.roadmap.steps,
+        image: `https://source.unsplash.com/featured/?${(data.businessCard.keywords?.[0]) ?? "business"}`,
+        roadmap: data.roadmap.steps as RoadmapStep[],
       };
 
       setIdeas([idea]);
@@ -102,25 +103,23 @@ const hasFetched = useRef(false)
     }
   };
 
+  // Trigger fetch once rawParsedParam is available (or immediately if null)
   useEffect(() => {
     if (!hasFetched.current) {
+      // If rawParsedParam is null this still allows a single fetch (interpreted as empty)
       hasFetched.current = true;
       fetchIdeas();
     }
-  }, []); // empty dependency array → runs only once
+    // Intentionally no deps except mount-guard, fetchIdeas reads rawParsedParam directly
+    // If you want to refetch when rawParsedParam changes, replace logic to depend on [rawParsedParam]
+  }, []); // runs once on mount
 
-
-
-  if (loading)
-    return <p className="text-center mt-10">Generating ideas…</p>;
+  if (loading) return <p className="text-center mt-10">Generating ideas…</p>;
   if (error)
     return (
       <div className="text-center mt-10">
         <p className="text-red-500 mb-4">{error}</p>
-        <button
-          onClick={fetchIdeas}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
+        <button onClick={fetchIdeas} className="bg-blue-600 text-white px-4 py-2 rounded">
           Try Again
         </button>
       </div>
@@ -152,8 +151,8 @@ const hasFetched = useRef(false)
               const payload = {
                 title: `${idea.title} Roadmap`,
                 description: `Launch your ${idea.title} business step-by-step`,
-                tags: [],            // optional
-                steps: idea.roadmap, // array of StepType
+                tags: [],
+                steps: idea.roadmap,
               };
 
               const res = await fetch("/api/roadmaps", {
@@ -194,10 +193,7 @@ const hasFetched = useRef(false)
                 <Users className="w-12 h-12 text-primary mx-auto mb-3" />
                 <h3 className="font-semibold text-text mb-2">Join Community</h3>
                 <p className="text-sm text-text/60">Connect with 2,500+ women entrepreneurs</p>
-                <Link 
-                  href="/CommunityPage"
-                  className="inline-flex items-center space-x-1 text-primary hover:text-primary-light mt-3 text-sm font-medium"
-                >
+                <Link href="/CommunityPage" className="inline-flex items-center space-x-1 text-primary hover:text-primary-light mt-3 text-sm font-medium">
                   <span>Learn More</span>
                   <ArrowRight size={14} />
                 </Link>
@@ -207,10 +203,7 @@ const hasFetched = useRef(false)
                 <TrendingUp className="w-12 h-12 text-primary mx-auto mb-3" />
                 <h3 className="font-semibold text-text mb-2">Get Resources</h3>
                 <p className="text-sm text-text/60">Access guides, templates, and tools</p>
-                <Link 
-                  href="/ResourcesPage"
-                  className="inline-flex items-center space-x-1 text-primary hover:text-primary-light mt-3 text-sm font-medium"
-                >
+                <Link href="/ResourcesPage" className="inline-flex items-center space-x-1 text-primary hover:text-primary-light mt-3 text-sm font-medium">
                   <span>Browse Now</span>
                   <ArrowRight size={14} />
                 </Link>
@@ -220,10 +213,7 @@ const hasFetched = useRef(false)
                 <Clock className="w-12 h-12 text-primary mx-auto mb-3" />
                 <h3 className="font-semibold text-text mb-2">Track Progress</h3>
                 <p className="text-sm text-text/60">Monitor your journey with our dashboard</p>
-                <Link 
-                  href="/SignupPage"
-                  className="inline-flex items-center space-x-1 text-primary hover:text-primary-light mt-3 text-sm font-medium"
-                >
+                <Link href="/SignupPage" className="inline-flex items-center space-x-1 text-primary hover:text-primary-light mt-3 text-sm font-medium">
                   <span>Sign Up Free</span>
                   <ArrowRight size={14} />
                 </Link>
@@ -234,10 +224,7 @@ const hasFetched = useRef(false)
 
         {/* CTA */}
         <div className="text-center">
-          <Link
-            href="/QuizPage"
-            className="inline-flex items-center space-x-2 text-primary hover:text-primary-light font-medium"
-          >
+          <Link href="/QuizPage" className="inline-flex items-center space-x-2 text-primary hover:text-primary-light font-medium">
             <span>Want different results? Retake the quiz</span>
             <ArrowRight size={16} />
           </Link>
