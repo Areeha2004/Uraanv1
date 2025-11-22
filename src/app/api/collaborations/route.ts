@@ -61,7 +61,6 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    console.log("POST payload:", body);
 
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
