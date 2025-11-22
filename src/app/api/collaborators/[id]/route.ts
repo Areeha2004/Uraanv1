@@ -70,7 +70,11 @@ export async function PATCH(req: Request, { params }: { params: any }) {
 }
 
 // ------------------ POST — Create a collaboration request ------------------
-export async function POST(req: Request, { params }: { params: any }) {
+export async function POST(
+  req: Request,
+  { params }: { params: { id: string } }
+)
+{
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
