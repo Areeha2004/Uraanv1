@@ -78,7 +78,7 @@ const RatingModal: React.FC<RatingModalProps> = ({
             <div>
               <h3 className="font-bold text-text">{collaborator.name}</h3>
               <p className="text-text/70 text-sm">{collaborator.title}</p>
-              <p className="text-text/60 text-sm mt-1">"{project.title}"</p>
+              <p className="text-text/60 text-sm mt-1">{project.title}</p>
             </div>
           </div>
 

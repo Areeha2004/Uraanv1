@@ -70,7 +70,7 @@ const TestimonialsSection: React.FC = () => {
                 <Quote className="text-primary/30" size={40} />
 
                 <blockquote className="text-lg md:text-xl text-text leading-relaxed">
-                  "{testimonials[currentIndex].quote}"
+                  {testimonials[currentIndex].quote}
                 </blockquote>
 
                 <div className="space-y-2">

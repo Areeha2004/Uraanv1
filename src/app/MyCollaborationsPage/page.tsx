@@ -204,8 +204,8 @@ const MyCollaborationsPage: React.FC = () => {
                   className="w-full p-3 bg-baby-powder/50 border border-secondary/30 rounded-xl text-text focus:outline-none focus:border-primary"
                 >
                   <option value="all">All Roles</option>
-                  <option value="requester">I'm Hiring</option>
-                  <option value="receiver">I'm Being Hired</option>
+                  <option value="requester">I&apos;m Hiring</option>
+                  <option value="receiver">I&apos;m Being Hired</option>
                 </select>
               </div>
 
@@ -263,7 +263,7 @@ const MyCollaborationsPage: React.FC = () => {
                 <Briefcase className="text-primary" size={24} />
               </div>
               <h3 className="text-lg font-bold text-text mb-2">No Active Projects</h3>
-              <p className="text-text/60">You don't have any active collaborations at the moment.</p>
+              <p className="text-text/60">You don&apos;t have any active collaborations at the moment.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

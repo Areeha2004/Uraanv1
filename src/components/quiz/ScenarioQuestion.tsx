@@ -66,7 +66,7 @@ const ScenarioQuestion: React.FC<ScenarioQuestionProps> = ({ scenario, value, on
           <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-text via-primary to-accent2 bg-clip-text text-transparent">{scenario.title}</h2>
           <div className="bg-white/60 backdrop-blur-sm border border-primary/20 rounded-3xl p-6 max-w-xl mx-auto shadow-lg">
             <p className="text-lg text-text/90 leading-relaxed italic font-medium">
-              "{scenario.scenario}"
+              &quot;{scenario.scenario}&quot;
             </p>
           </div>
         </div>

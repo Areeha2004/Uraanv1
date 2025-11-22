@@ -415,7 +415,7 @@ console.log("Fetching roadmap for ID:", roadmapId);
             <h3 className="text-2xl font-bold text-text mb-4">Ready to Launch Your Business?</h3>
             <p className="text-text/70 mb-6 max-w-2xl mx-auto">
               Complete all steps and join our community of successful women entrepreneurs. 
-              We're here to support you every step of the way!
+              We&apos;re here to support you every step of the way!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link

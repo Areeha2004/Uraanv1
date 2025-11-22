@@ -77,7 +77,7 @@ const ReflectionArea: React.FC<ReflectionAreaProps> = ({ title, subtitle, value,
             onClick={() => onChange('')}
             className="text-sm text-text/60 hover:text-primary transition-all duration-300 underline decoration-dotted hover:scale-105 font-medium"
           >
-            I'd prefer to skip this reflection
+            I&apos;d prefer to skip this reflection
           </button>
         </div>
       </div>
@@ -86,7 +86,7 @@ const ReflectionArea: React.FC<ReflectionAreaProps> = ({ title, subtitle, value,
       <div className="text-center">
         <div className="bg-gradient-to-r from-primary/20 via-accent2/20 to-purple-400/20 rounded-2xl p-6 max-w-md mx-auto shadow-lg border border-primary/20">
           <p className="text-sm text-text/80 italic font-medium">
-            "The cave you fear to enter holds the treasure you seek."
+            &quot;The cave you fear to enter holds the treasure you seek.&quot;
           </p>
           <p className="text-xs text-text/60 mt-2 font-semibold">— Joseph Campbell</p>
         </div>

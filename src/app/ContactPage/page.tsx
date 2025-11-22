@@ -123,8 +123,9 @@ const ContactPage: React.FC = () => {
           </h1>
           <p className="text-xl text-text/80 max-w-3xl mx-auto leading-relaxed">
             Have questions about starting your business? Need help with your entrepreneurial journey? 
-            We're here to support you every step of the way.
+            We&apos;re here to support you every step of the way.
           </p>
+
         </div>
       </section>
 

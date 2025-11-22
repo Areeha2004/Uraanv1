@@ -139,7 +139,7 @@ const hasFetched = useRef(false)
             Your Perfect <span className="bg-gradient-to-r from-primary to-accent1 bg-clip-text text-transparent">Business Matches</span>
           </h1>
           <p className="text-lg text-text/70 max-w-2xl mx-auto">
-            Based on your skills, interests, and goals, we've found the perfect business opportunities for you. Each comes with a detailed roadmap to get you started.
+            Based on your skills, interests, and goals, we&apos;ve found the perfect business opportunities for you. Each comes with a detailed roadmap to get you started.
           </p>
         </div>
 

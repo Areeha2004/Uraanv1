@@ -246,7 +246,7 @@ const [msg,      setMsg]      = useState<string | null>(null);
 
           <div className="mt-8 text-center">
             <p className="text-text/70">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link
                 href="/SignupPage"
                 className="text-primary hover:text-primary-light font-medium transition-colors"
@@ -254,6 +254,7 @@ const [msg,      setMsg]      = useState<string | null>(null);
                 Sign up for free
               </Link>
             </p>
+
           </div>
         </div>
 

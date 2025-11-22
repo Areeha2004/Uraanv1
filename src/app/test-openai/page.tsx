@@ -23,8 +23,12 @@ export default function TestOpenAIPage() {
 
       setResult(data.result);
       setError("");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(String(err));
+      }
       setResult("");
     }
   };

@@ -1,7 +1,5 @@
-// app/api/upload-avatar/route.ts
-
 import { NextResponse } from 'next/server'
-import { v2 as cloudinary } from 'cloudinary'
+import { v2 as cloudinary, UploadApiResponse } from 'cloudinary'
 import { Readable } from 'stream'
 
 export const config = {
@@ -28,10 +26,13 @@ export async function POST(request: Request) {
     const arrayBuffer = await fileField.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
-    const uploadResult = await new Promise<any>((resolve, reject) => {
+    const uploadResult: UploadApiResponse = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         { folder: 'avatars', resource_type: 'image' },
-        (err, result) => (err ? reject(err) : resolve(result))
+        (err, result) => {
+          if (err) reject(err)
+          else resolve(result as UploadApiResponse)
+        }
       )
       Readable.from(buffer).pipe(stream)
     })

@@ -162,12 +162,12 @@ const res = await fetch('/api/auth/signup', {
                 Start Your <span className="bg-gradient-to-r from-primary to-accent1 bg-clip-text text-transparent">Entrepreneurial Journey</span>
               </h1>
               <p className="text-lg text-text/70 leading-relaxed">
-                Join thousands of Pakistani women who are building successful businesses with URAAN's AI-powered guidance and supportive community.
+                Join thousands of Pakistani women who are building successful businesses with URAAN&apos;s AI-powered guidance and supportive community.
               </p>
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-xl font-bold text-text">What you'll get:</h3>
+              <h3 className="text-xl font-bold text-text">What you&apos;ll get:</h3>
               <div className="grid grid-cols-1 gap-3">
                 {benefits.map((benefit, index) => (
                   <div key={index} className="flex items-start space-x-3">

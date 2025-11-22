@@ -139,7 +139,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               <h3 className="text-2xl font-bold text-[#190357] mb-2">Request Sent Successfully!</h3>
               <p className="text-[#190357]">
                 Your collaboration request has been sent to {collaborator.name}. 
-                You'll receive a notification when they respond.
+                You&apos;ll receive a notification when they respond.
               </p>
             </div>
             <div className="space-y-3">
@@ -285,7 +285,7 @@ const handleSubmit = async (e: React.FormEvent) => {
           <option value="1-week">Within 1 week</option>
           <option value="2-weeks">Within 2 weeks</option>
           <option value="1-month">Within 1 month</option>
-          <option value="flexible">I'm flexible</option>
+          <option value="flexible">I&apos;m flexible</option>
         </select>
       </div>
       {errors.timeline && <p className="text-sm text-red-600">{errors.timeline}</p>}
