@@ -70,11 +70,11 @@ export async function PATCH(req: Request, { params }: { params: any }) {
 }
 
 // ------------------ POST — Create a collaboration request ------------------
-export async function POST(
-  req: Request,
-  { params }: { params: { id: string } }
-)
-{
+
+
+export async function POST(req: Request, context: any) {
+  const { params } = context as { params: { id: string } };
+
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -84,7 +84,6 @@ export async function POST(
     const requester = await prisma.user.findUnique({
       where: { email: session.user.email },
     });
-
     if (!requester) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
@@ -92,7 +91,6 @@ export async function POST(
     const collaborator = await prisma.collaboratorProfile.findUnique({
       where: { userId: params.id },
     });
-
     if (!collaborator) {
       return NextResponse.json({ error: "Collaborator not found" }, { status: 404 });
     }
