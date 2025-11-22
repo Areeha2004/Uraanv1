@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-dynamic";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -19,10 +20,11 @@ const LoginPage: React.FC = () => {
 const [msg,      setMsg]      = useState<string | null>(null);
   // clear stale OAuth session on mismatch
   useEffect(() => {
-    if (error === "OAuthAccountNotLinked" || error === "SessionRequired") {
-      signOut({ callbackUrl: "/LoginPage" }); 
+    if (typeof window !== "undefined" && (error === "OAuthAccountNotLinked" || error === "SessionRequired")) {
+      signOut({ callbackUrl: "/LoginPage" });
     }
   }, [error]);
+
 
   useEffect(() => {
     if (reset) router.replace("/LoginPage");
