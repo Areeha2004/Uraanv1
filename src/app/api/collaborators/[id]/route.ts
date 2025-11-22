@@ -1,14 +1,15 @@
+// src/app/api/collaborations/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from "@/lib/auth";
 
 interface Params {
-  params: { id: string };
+  id: string;
 }
 
 // GET — Fetch collaborator profile by userId
-export async function GET(request: NextRequest, { params }: Params) {
+export async function GET(request: NextRequest, { params }: { params: Params }) {
   try {
     const collaborator = await prisma.collaboratorProfile.findUnique({
       where: { userId: params.id },
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 }
 
 // PATCH — Update collaborator profile
-export async function PATCH(request: NextRequest, { params }: Params) {
+export async function PATCH(request: NextRequest, { params }: { params: Params }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -62,7 +63,6 @@ export async function PATCH(request: NextRequest, { params }: Params) {
         startingPrice: data.startingPrice,
         responseTime: data.responseTime,
         location: data.location,
-        // "verified", "topRated", "rating", "reviewsCount" should be updated internally, not here
       },
     });
 
@@ -74,7 +74,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 }
 
 // POST — Create a collaboration request with this collaborator
-export async function POST(request: NextRequest, { params }: Params) {
+export async function POST(request: NextRequest, { params }: { params: Params }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -89,7 +89,6 @@ export async function POST(request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Ensure collaborator exists
     const collaborator = await prisma.collaboratorProfile.findUnique({
       where: { userId: params.id },
     });
@@ -98,22 +97,23 @@ export async function POST(request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: 'Collaborator not found' }, { status: 404 });
     }
 
-    // Prevent sending collaboration request to yourself
     if (collaborator.userId === requester.id) {
       return NextResponse.json({ error: 'You cannot collaborate with yourself' }, { status: 400 });
     }
 
-    const body = await request.json();
-    const { projectDescription, budget, deadline } = body;
+    const body: {
+      projectDescription?: string;
+      budget?: number | string;
+      deadline?: string;
+    } = await request.json();
 
-    // Create collaboration record
     const collab = await prisma.collaboration.create({
       data: {
         requesterId: requester.id,
         receiverId: collaborator.userId,
-        projectDescription,
-        budget: budget ? parseFloat(budget) : undefined,
-        deadline: deadline ? new Date(deadline) : undefined,
+        projectDescription: body.projectDescription,
+        budget: body.budget ? parseFloat(body.budget.toString()) : undefined,
+        deadline: body.deadline ? new Date(body.deadline) : undefined,
       },
     });
 

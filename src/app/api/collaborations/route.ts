@@ -1,7 +1,5 @@
-// /api/collaborations/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -9,15 +7,19 @@ import { authOptions } from "@/lib/auth";
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session?.user?.email)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
-    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+    if (!user)
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
 
     const url = new URL(request.url);
     const status = url.searchParams.get("status");
     const role = url.searchParams.get("role");
-    
+
     const whereClause: Prisma.CollaborationWhereInput = {};
 
     if (role === "requester") whereClause.requesterId = user.id;
@@ -25,7 +27,8 @@ export async function GET(request: NextRequest) {
     else whereClause.OR = [{ requesterId: user.id }, { receiverId: user.id }];
 
     if (status) {
-      whereClause.status = status as Prisma.CollaborationWhereInput['status'];
+      whereClause.status =
+        status as Prisma.CollaborationWhereInput["status"];
     }
 
     const collaborations = await prisma.collaboration.findMany({
@@ -40,20 +43,27 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(collaborations);
   } catch (error) {
     console.error("GET /collaborations error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json();
-    console.log("POST payload:", body); // Debug trace
+    const body = await request.json();
+    console.log("POST payload:", body);
 
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session?.user?.email)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
-    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+    if (!user)
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
 
     const {
       id: collaboratorId,
@@ -67,7 +77,10 @@ export async function POST(req: Request) {
     } = body;
 
     if (!role || !collaboratorId) {
-      return NextResponse.json({ error: "Missing required fields: role or collaborator id" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing required fields: role or collaborator id" },
+        { status: 400 }
+      );
     }
 
     const requesterId = role === "requester" ? user.id : collaboratorId;
@@ -80,7 +93,7 @@ export async function POST(req: Request) {
         role,
         title: projectTitle ?? null,
         projectDescription: projectDescription ?? null,
-        budget: budget ? String(budget) : null,
+        budget: budget ? Number(budget) : null,
         deadline: deadline ? new Date(deadline) : null,
         contactMethod: contactMethod ?? null,
         additionalInfo: additionalInfo ?? null,
@@ -90,6 +103,9 @@ export async function POST(req: Request) {
     return NextResponse.json(collaboration, { status: 201 });
   } catch (error) {
     console.error("POST /collaborations error:", error);
-    return NextResponse.json({ error: "Failed to create collaboration" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create collaboration" },
+      { status: 500 }
+    );
   }
 }

@@ -8,7 +8,12 @@ interface Params {
 }
 
 // ------------------ GET SINGLE COLLAB ------------------
-export async function GET(_: NextRequest, { params }: Params) {
+export async function GET(
+  request: NextRequest,
+  context: Params
+) {
+  const { params } = context;
+
   try {
     const collaboration = await prisma.collaboration.findUnique({
       where: { id: params.id },
@@ -29,7 +34,12 @@ export async function GET(_: NextRequest, { params }: Params) {
 }
 
 // ------------------ DELETE COLLAB ------------------
-export async function DELETE(_: NextRequest, { params }: Params) {
+export async function DELETE(
+  request: NextRequest,
+  context: Params
+) {
+  const { params } = context;
+
   try {
     const session = await getServerSession(authOptions);
 
@@ -53,7 +63,10 @@ export async function DELETE(_: NextRequest, { params }: Params) {
         { status: 404 }
       );
 
-    if (collaboration.requesterId !== user.id && collaboration.receiverId !== user.id) {
+    if (
+      collaboration.requesterId !== user.id &&
+      collaboration.receiverId !== user.id
+    ) {
       return NextResponse.json(
         { error: "Not authorized to delete this collaboration" },
         { status: 403 }
