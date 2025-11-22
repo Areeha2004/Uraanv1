@@ -1,8 +1,8 @@
 // src/app/api/roadmaps/route.ts
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { Prisma, PrismaClient } from "@prisma/client"; // keep types
+import { Prisma } from "@prisma/client"; // keep types
 import prisma from "@/lib/prisma";
 
 /** Shape of each step in the incoming request */
@@ -27,7 +27,7 @@ type RoadmapWithSteps = Prisma.RoadmapGetPayload<{
   include: { steps: true };
 }>;
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     // 1. Auth check
     const session = await getServerSession(authOptions);

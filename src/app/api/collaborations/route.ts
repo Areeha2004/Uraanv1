@@ -1,34 +1,41 @@
-import { NextRequest, NextResponse } from "next/server";
+// src/app/api/collaborations/route.ts
+import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-export async function GET(request: NextRequest) {
+// ------------------ GET ALL COLLABS ------------------
+export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email)
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
     });
-    if (!user)
+    if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
 
-    const url = new URL(request.url);
+    const url = new URL(req.url);
     const status = url.searchParams.get("status");
     const role = url.searchParams.get("role");
 
     const whereClause: Prisma.CollaborationWhereInput = {};
 
-    if (role === "requester") whereClause.requesterId = user.id;
-    else if (role === "receiver") whereClause.receiverId = user.id;
-    else whereClause.OR = [{ requesterId: user.id }, { receiverId: user.id }];
+    if (role === "requester") {
+      whereClause.requesterId = user.id;
+    } else if (role === "receiver") {
+      whereClause.receiverId = user.id;
+    } else {
+      whereClause.OR = [{ requesterId: user.id }, { receiverId: user.id }];
+    }
 
     if (status) {
-      whereClause.status =
-        status as Prisma.CollaborationWhereInput["status"];
+      whereClause.status = status as Prisma.CollaborationWhereInput["status"];
     }
 
     const collaborations = await prisma.collaboration.findMany({
@@ -50,20 +57,23 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+// ------------------ CREATE NEW COLLAB ------------------
+export async function POST(req: Request) {
   try {
-    const body = await request.json();
+    const body = await req.json();
     console.log("POST payload:", body);
 
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email)
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
     });
-    if (!user)
+    if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
 
     const {
       id: collaboratorId,
@@ -93,7 +103,7 @@ export async function POST(request: NextRequest) {
         role,
         title: projectTitle ?? null,
         projectDescription: projectDescription ?? null,
-        budget: budget ? Number(budget) : null,
+        budget: budget ? String(budget) : null,
         deadline: deadline ? new Date(deadline) : null,
         contactMethod: contactMethod ?? null,
         additionalInfo: additionalInfo ?? null,

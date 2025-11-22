@@ -1,5 +1,6 @@
+// src/app/api/roadmaps/[id]/route.ts
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
+import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
@@ -58,18 +59,18 @@ export async function GET(
   const normalized = {
     title: roadmap.title,
     description: roadmap.description,
-    image: "",             // DB doesn't have image; send safe defaults
-    timeline: "",          // DB doesn't have timeline; safe default
-    investment: "",        // DB doesn't have investment
-    difficulty: "",        // DB doesn't have difficulty
-    successRate: "",       // DB doesn't have successRate
+    image: "",       // safe defaults
+    timeline: "",
+    investment: "",
+    difficulty: "",
+    successRate: "",
     steps: roadmap.steps.map((s) => {
       const r = safeParseResources(s.resources);
       return {
         stepId: s.id,
         stepTitle: s.title,
         description: s.content,
-        duration: String(s.stepNumber), // derive from stepNumber (or change as needed)
+        duration: String(s.stepNumber), // derived from stepNumber
         tasks: r.tasks,
         downloadables: r.downloadables,
         videoTutorial: r.videoTutorial,

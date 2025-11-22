@@ -1,10 +1,10 @@
 // src/app/api/user/roadmaps/route.ts
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
+import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import prisma from "../../../../lib/prisma";
+import prisma from "@/lib/prisma";
 
-export async function GET() {
+export async function GET(_req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json(
@@ -20,7 +20,9 @@ export async function GET() {
       roadmap: {
         include: {
           steps: {
-            include: { userProgress: { where: { userId: session.user.id } } },
+            include: {
+              userProgress: { where: { userId: session.user.id } },
+            },
           },
         },
       },

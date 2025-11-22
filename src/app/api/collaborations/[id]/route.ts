@@ -1,19 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+// src/app/api/collaborations/[id]/route.ts
+import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-interface Params {
-  params: { id: string };
-}
-
 // ------------------ GET SINGLE COLLAB ------------------
-export async function GET(
-  request: NextRequest,
-  context: Params
-) {
-  const { params } = context;
-
+export async function GET(req: Request, { params }: { params: any }) {
   try {
     const collaboration = await prisma.collaboration.findUnique({
       where: { id: params.id },
@@ -23,8 +15,9 @@ export async function GET(
       },
     });
 
-    if (!collaboration)
+    if (!collaboration) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
 
     return NextResponse.json(collaboration);
   } catch (error) {
@@ -34,34 +27,32 @@ export async function GET(
 }
 
 // ------------------ DELETE COLLAB ------------------
-export async function DELETE(
-  request: NextRequest,
-  context: Params
-) {
-  const { params } = context;
-
+export async function DELETE(req: Request, { params }: { params: any }) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.email)
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
     });
 
-    if (!user)
+    if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
 
     const collaboration = await prisma.collaboration.findUnique({
       where: { id: params.id },
     });
 
-    if (!collaboration)
+    if (!collaboration) {
       return NextResponse.json(
         { error: "Collaboration not found" },
         { status: 404 }
       );
+    }
 
     if (
       collaboration.requesterId !== user.id &&

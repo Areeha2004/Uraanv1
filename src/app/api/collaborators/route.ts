@@ -1,12 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
+// src/app/api/collaborators/route.ts
+import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 // ======================= GET ALL COLLABORATORS (FILTERS) =======================
-export async function GET(request: NextRequest) {
+export async function GET(req: Request) {
   try {
-    const url = new URL(request.url);
+    const url = new URL(req.url);
     const skill = url.searchParams.get("skill");
     const location = url.searchParams.get("location");
     const minRating = parseFloat(url.searchParams.get("minRating") || "0");
@@ -50,12 +51,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(collaborators);
   } catch (error) {
     console.error("Error fetching collaborators:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
 
 // ======================= CREATE COLLABORATOR PROFILE =======================
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -82,7 +86,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const data = await request.json();
+    const data = await req.json();
 
     const requiredFields = [
       "title",
@@ -131,6 +135,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(collaborator);
   } catch (error) {
     console.error("Error creating collaborator:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }

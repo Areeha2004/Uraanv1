@@ -1,5 +1,5 @@
 // src/app/api/upload/route.ts
-import { NextRequest, NextResponse } from 'next/server'
+import {  NextResponse } from 'next/server'
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary'
 import { Readable } from 'stream'
 
@@ -15,7 +15,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET!,
 })
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     const formData = await request.formData()
     const fileField = formData.get('file') as File | null
