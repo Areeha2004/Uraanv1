@@ -178,7 +178,7 @@ if (!collaborator) {
 }
 
   return (
-    
+
     <div className="pt-16 min-h-screen bg-gradient-to-br from-base to-baby-powder">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
@@ -193,7 +193,7 @@ if (!collaborator) {
         {/* Header Section */}
         <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-3xl overflow-hidden mb-8">
           {/* Cover Image */}
-          
+
           <div className="relative h-48 md:h-64">
             <img
               src={collaborator.avatar}
@@ -201,7 +201,7 @@ if (!collaborator) {
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-accent1/60 to-transparent"></div>
-            
+
             {/* Badges */}
             <div className="absolute top-6 right-6 flex space-x-2">
               {collaborator.verified && (
@@ -244,7 +244,7 @@ if (!collaborator) {
                     </div>
                     <div className="flex items-center space-x-1">
                       <Calendar size={14} className="text-primary" />
-                      <span>Joined {collaborator.joinedDate}</span>
+                      <span>Joined : since 2025</span>
                     </div>
                   </div>
                 </div>
@@ -256,7 +256,7 @@ if (!collaborator) {
       <Star className="text-yellow-400" size={16} fill="currentColor" />
       <span className="font-bold text-text">{collaborator.rating}</span>
     </div>
-    <p className="text-xs text-text/60">{collaborator.totalReviews} reviews</p>
+    <p className="text-xs text-text/60">{collaborator.rating} reviews</p>
   </div>
   <div className="text-center p-3 bg-baby-powder/50 rounded-xl">
     <div className="flex items-center justify-center mb-1">
@@ -367,7 +367,7 @@ if (!collaborator) {
               <div className="space-y-6">
                 <div>
                   <h3 className="text-2xl font-bold text-text mb-4">About Me</h3>
-                  <p className="text-text/70 leading-relaxed">{collaborator.bio}</p>
+                  <p className="text-text/70 leading-relaxed">{collaborator.skills}</p>
                 </div>
 
                 <div>
@@ -512,7 +512,7 @@ if (!collaborator) {
         </div>
       </div>
 
-     
+
 {showHireModal && (
   <HireCollaboratorModal
     collaborator={{
@@ -570,7 +570,7 @@ if (!collaborator) {
 )}
 
 
-      
+
     </div>
   );
 };
