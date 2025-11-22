@@ -1,6 +1,7 @@
 // /api/collaborations/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from '@prisma/client';
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
@@ -16,14 +17,16 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     const status = url.searchParams.get("status");
     const role = url.searchParams.get("role");
-
-    const whereClause: any = {};
+    
+    const whereClause: Prisma.CollaborationWhereInput = {};
 
     if (role === "requester") whereClause.requesterId = user.id;
     else if (role === "receiver") whereClause.receiverId = user.id;
     else whereClause.OR = [{ requesterId: user.id }, { receiverId: user.id }];
 
-    if (status) whereClause.status = status;
+    if (status) {
+      whereClause.status = status as Prisma.CollaborationWhereInput['status'];
+    }
 
     const collaborations = await prisma.collaboration.findMany({
       where: whereClause,

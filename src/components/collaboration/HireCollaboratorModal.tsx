@@ -12,11 +12,22 @@ interface Collaborator {
   startingPrice: string;
 }
 
+interface HirePayload {
+  id: string;
+  role: "requester" | "receiver";
+  projectTitle: string;
+  projectDescription: string;
+  budget: string;
+  deadline: string | null;
+  contactMethod: string;
+  additionalInfo: string | null;
+}
+
 interface HireCollaboratorModalProps {
   collaborator: Collaborator;
   role: "requester" | "receiver"; // must match backend
   onClose: () => void;
-  onSubmit: (payload: any) => Promise<void>;
+  onSubmit: (payload: HirePayload) => Promise<void>;
 }
 
 const HireCollaboratorModal: React.FC<HireCollaboratorModalProps> = ({
@@ -100,12 +111,12 @@ const handleSubmit = async (e: React.FormEvent) => {
 
     setIsSuccess(true);
     onClose();
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error submitting form:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Something went wrong while submitting. Please try again.';
     setErrors((prev) => ({
       ...prev,
-      submit:
-        error?.message || "Something went wrong while submitting. Please try again.",
+      submit: errorMessage,
     }));
   } finally {
     setIsSubmitting(false);

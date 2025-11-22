@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 
-import { ArrowRight, ChevronDown, Star, Users, Target, Award } from 'lucide-react';
+import { ArrowRight, ChevronDown, Award } from 'lucide-react';
 import HeroSection from '../components/home/HeroSection';
 import StatsSection from '../components/home/StatsSection';
 import FeaturesSection from '../components/home/FeaturesSection';
@@ -28,7 +28,7 @@ const HomePage: React.FC = () => {
                 About <span className="bg-gradient-to-r from-primary to-accent1 bg-clip-text text-transparent">URAAN</span>
               </h2>
               <p className="text-lg text-text/80 leading-relaxed">
-                URAAN means "flight" in Urdu - representing the journey of Pakistani women taking off toward entrepreneurial success. We believe every woman has the potential to build something amazing, and we're here to provide the guidance, tools, and community to make it happen.
+                URAAN means &quot;flight&quot; in Urdu - representing the journey of Pakistani women taking off toward entrepreneurial success. We believe every woman has the potential to build something amazing, and we&apos;re here to provide the guidance, tools, and community to make it happen.
               </p>
               <p className="text-text/70">
                 Our AI-powered platform analyzes your skills, interests, and circumstances to recommend personalized business ideas with clear roadmaps. From freelancing to e-commerce, we help you find your perfect path to financial independence.

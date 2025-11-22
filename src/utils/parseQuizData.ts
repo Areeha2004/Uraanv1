@@ -1,9 +1,20 @@
+interface QuizDataRaw {
+  personality?: string;
+  time?: string;
+  investment?: string;
+  interests?: string | string[];
+  goals?: string | string[];
+  experience?: string | string[];
+  constraints?: string | string[];
+  reflections?: string[];
+}
+
 export function parseQuizData(rawParsed: string | null) {
   if (!rawParsed) throw new Error("Missing parsed quiz data.");
 
-  let parsed: any;
+  let parsed: QuizDataRaw;
   try {
-    parsed = JSON.parse(decodeURIComponent(rawParsed));
+    parsed = JSON.parse(decodeURIComponent(rawParsed)) as QuizDataRaw;
   } catch {
     throw new Error("Failed to decode or parse quiz data.");
   }

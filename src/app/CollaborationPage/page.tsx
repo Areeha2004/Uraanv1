@@ -18,8 +18,8 @@ interface PortfolioItem {
   image?: string;
 }
 interface Collaborator {
-  id: number;
-  userId :number;
+  id: string;
+  userId: string;
   name: string;
   title: string;
   location: string;
@@ -86,13 +86,35 @@ const CollaborationPage: React.FC = () => {
           throw new Error(`Failed to fetch: ${res.status}`);
         }
 
-        const data: Collaborator[] = await res.json();
-       const mapped: Collaborator[] = data.map((entry: any) => ({
+        interface ApiCollaboratorResponse {
+          id: string;
+          userId: string;
+          title: string;
+          location: string;
+          avatar: string;
+          rating: number;
+          reviewsCount: number;
+          completedProjects?: number;
+          responseTime: string;
+          startingPrice: string;
+          category: string;
+          skills: string[];
+          portfolio: PortfolioItem[];
+          verified: boolean;
+          topRated: boolean;
+          user?: {
+            name?: string;
+            image?: string;
+          };
+        }
+        
+        const data: ApiCollaboratorResponse[] = await res.json();
+       const mapped: Collaborator[] = data.map((entry) => ({
   id: entry.id,
   name: entry.user?.name || "", // ⬅️ grab from nested user
   title: entry.title,
   userId: entry.userId,
-  image: entry.user?.image ,
+  image: entry.user?.image || "/default-profile.png",
   location: entry.location,
   avatar: entry.avatar,
   rating: entry.rating,
@@ -107,8 +129,8 @@ const CollaborationPage: React.FC = () => {
   topRated: entry.topRated,
 }));
         setCollaborators(mapped);
-      } catch (err: any) {
-        if (err.name !== "AbortError") {
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name !== "AbortError") {
           setError(err.message || "Unknown error");
         }
       } finally {

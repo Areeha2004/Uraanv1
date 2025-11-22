@@ -202,10 +202,11 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
       setSubmitStatus("success");
       router.push("/CollaborationPage");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Submission error:", err);
       setSubmitStatus("error");
-      setErrors((prev) => ({ ...prev, form: err.message }));
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setErrors((prev) => ({ ...prev, form: errorMessage }));
     } finally {
       setIsSubmitting(false);
     }

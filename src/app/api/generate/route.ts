@@ -122,8 +122,9 @@ export async function POST(req: NextRequest) {
     const args = functionCall && functionCall.arguments ? functionCall.arguments : "{}";
     const result = JSON.parse(args);
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("OpenAI Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

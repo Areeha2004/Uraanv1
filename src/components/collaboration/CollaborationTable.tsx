@@ -97,9 +97,9 @@ const CollaborationTable: React.FC<CollaborationTableProps> = ({
       if (selected && selected.id === updated.id) {
         setSelected(updated);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.message || 'Action failed');
+      setError(err instanceof Error ? err.message : 'Action failed');
     } finally {
       setLoadingAction(false);
     }

@@ -11,7 +11,7 @@ import ReflectionArea from '@/components/quiz/ReflectionArea';
 const QuizPage: React.FC = () => {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [reflections, setReflections] = useState<Record<string, string>>({});
   const [isTransitioning, setIsTransitioning] = useState(false);
 
@@ -371,7 +371,7 @@ const QuizPage: React.FC = () => {
   const totalSteps = scenarios.length + 2; // +2 for reflection areas
   const reflectionSteps = [3, 6]; // Show reflection after questions 3 and 6
 
-  const handleAnswer = (questionId: string, answer: any) => {
+  const handleAnswer = (questionId: string, answer: string | string[]) => {
     setAnswers(prev => ({
       ...prev,
       [questionId]: answer
@@ -514,7 +514,7 @@ const QuizPage: React.FC = () => {
               <ScenarioQuestion
                 scenario={content.scenario!}
                 value={answers[content.scenario!.id]}
-                onChange={(value: any) => handleAnswer(content.scenario!.id, value)}
+                onChange={(value: string | string[]) => handleAnswer(content.scenario!.id, value)}
               />
             )}
           </div>

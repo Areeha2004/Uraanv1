@@ -18,8 +18,8 @@ interface ScenarioQuestionProps {
     options: ScenarioOption[];
     maxSelections?: number;
   };
-  value: any;
-  onChange: (value: any) => void;
+  value: string | string[];
+  onChange: (value: string | string[]) => void;
 }
 
 const ScenarioQuestion: React.FC<ScenarioQuestionProps> = ({ scenario, value, onChange }) => {
@@ -28,7 +28,7 @@ const ScenarioQuestion: React.FC<ScenarioQuestionProps> = ({ scenario, value, on
   };
 
   const handleMultipleChoice = (optionId: string) => {
-    const currentValues = value || [];
+    const currentValues = Array.isArray(value) ? value : [];
     const maxSelections = scenario.maxSelections || scenario.options.length;
     
     if (currentValues.includes(optionId)) {
@@ -43,13 +43,14 @@ const ScenarioQuestion: React.FC<ScenarioQuestionProps> = ({ scenario, value, on
   const isSelected = (optionId: string) => {
     return scenario.type === 'single-choice' 
       ? value === optionId 
-      : (value || []).includes(optionId);
+      : (Array.isArray(value) ? value : []).includes(optionId);
   };
 
   const isDisabled = (optionId: string) => {
+    const currentValues = Array.isArray(value) ? value : [];
     return scenario.type === 'multiple-choice' && 
       scenario.maxSelections && 
-      (value || []).length >= scenario.maxSelections && 
+      currentValues.length >= scenario.maxSelections && 
       !isSelected(optionId);
   };
 

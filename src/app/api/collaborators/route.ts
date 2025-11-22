@@ -10,7 +10,13 @@ export async function GET(request: NextRequest) {
     const location = url.searchParams.get('location');
     const minRating = parseFloat(url.searchParams.get('minRating') || '0');
 
-    const where: any = {};
+    interface WhereClause {
+      skills?: { has: string };
+      location?: string;
+      rating?: { gte: number };
+    }
+
+    const where: WhereClause = {};
 
     if (skill) {
       where.skills = {

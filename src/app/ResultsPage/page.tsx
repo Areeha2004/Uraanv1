@@ -13,6 +13,15 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+interface RoadmapStep {
+  stepTitle: string;
+  description: string;
+  duration: string;
+  tasks: string[];
+  downloadables: string[];
+  videoTutorial: string;
+}
+
 interface BusinessIdea {
   id: string;
   title: string;
@@ -25,7 +34,7 @@ interface BusinessIdea {
   benefits: string[];
   image: string;
   keywords: string[];
-  roadmap: any[]; // this is your steps array
+  roadmap: RoadmapStep[];
 }
 
 export default function ResultsPage() {
@@ -85,9 +94,9 @@ const hasFetched = useRef(false)
       };
 
       setIdeas([idea]);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.message || "Failed to generate.");
+      setError(err instanceof Error ? err.message : "Failed to generate.");
     } finally {
       setLoading(false);
     }

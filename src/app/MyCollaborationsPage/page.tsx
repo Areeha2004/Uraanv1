@@ -67,7 +67,7 @@ const MyCollaborationsPage: React.FC = () => {
       if (!res.ok) throw new Error('Failed to fetch active collaborations');
       const data = await res.json();
       setActiveCollaborations(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching active collaborations:', err);
     } finally {
       setActiveLoading(false);
@@ -95,9 +95,9 @@ const MyCollaborationsPage: React.FC = () => {
       if (!res.ok) throw new Error('Failed to fetch collaborations');
       const data = await res.json();
       setCollaborations(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching collaborations:', err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }

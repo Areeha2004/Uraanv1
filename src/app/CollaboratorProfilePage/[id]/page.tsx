@@ -64,7 +64,7 @@ interface Collaborator {
   const { id } = useParams();
   const [showHireModal, setShowHireModal] = useState(false);
   const [activeTab, setActiveTab] = useState("portfolio");
-  const [collaborator, setCollaborator] = useState<any>(null);
+  const [collaborator, setCollaborator] = useState<Collaborator | null>(null);
   const [loading, setLoading] = useState(true);
 const { data: session, status } = useSession();
 
@@ -146,7 +146,7 @@ const userIsHiring =
         responseTime: entry.responseTime || "",
         startingPrice: entry.startingPrice || "",
         skills: entry.skills || [],
-      portfolio: (entry.portfolio || []).map((p: any) => ({
+      portfolio: (entry.portfolio || []).map((p: { title?: string; serviceType?: string; url?: string; image?: string }) => ({
   title: p.title || "",
   serviceType: p.serviceType || "",
   url: p.url || "",
