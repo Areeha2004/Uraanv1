@@ -49,7 +49,7 @@ const QuizPage: React.FC = () => {
     scenario: "It's a quiet Sunday morning. Everyone's still asleep, and you're not in a rush. You finally have a day to yourself. What are you most likely to *instinctively* lean toward — no planning, just your natural pull?",
     icon: '🌤️',
     color: 'from-orange-300/20 to-rose-400/20',
-    type: "single-choice" as "single-choice",
+    type: "single-choice" as const,
     options: [
       {
         id: 'creative_project',
@@ -80,7 +80,7 @@ const QuizPage: React.FC = () => {
     scenario: "A close friend opens up to you about something they’re struggling with — they’re overwhelmed and don’t know where to start. Without thinking too hard, what’s the first thing you naturally do?",
     icon: '💡',
     color: 'from-yellow-300/20 to-amber-500/20',
-    type: "single-choice" as "single-choice",
+    type: "single-choice" as const,
     options: [
       {
         id: 'listen_empathize',
@@ -113,7 +113,7 @@ const QuizPage: React.FC = () => {
     scenario: "Picture yourself doing meaningful work — the kind that excites you and feels aligned. What kind of environment brings out your best self?",
     icon: '🏡',
     color: 'from-green-400/20 to-emerald-500/20',
-    type: "single-choice" as "single-choice",
+    type: "single-choice" as const,
     options: [
       {
         id: 'home_comfort',
@@ -144,7 +144,7 @@ const QuizPage: React.FC = () => {
     scenario: "Let’s be honest — building something meaningful takes time. Based on your current routine and responsibilities, how much time can you actually dedicate?",
     icon: '⏰',
     color: 'from-blue-400/20 to-cyan-400/20',
-    type: "single-choice" as "single-choice",
+    type: "single-choice" as const,
     options: [
       {
         id: 'few_hours_daily',
@@ -175,7 +175,7 @@ const QuizPage: React.FC = () => {
     scenario: "Everyone starts from a different place — and that’s okay. How much are you realistically comfortable investing to get started?",
     icon: '💰',
     color: 'from-purple-400/20 to-violet-400/20',
-    type: "single-choice" as "single-choice",
+    type: "single-choice" as const,
     options: [
       {
         id: 'minimal_risk',
@@ -206,7 +206,7 @@ const QuizPage: React.FC = () => {
     scenario: "When you dream of making an impact, which areas excite your heart the most?",
     icon: '✨',
     color: 'from-pink-400/20 to-rose-400/20',
-    type: "multiple-choice" as "multiple-choice",
+    type: "multiple-choice" as const,
     maxSelections: 3,
     options: [
       {
@@ -248,7 +248,7 @@ const QuizPage: React.FC = () => {
     scenario: "Everyone starts from a different place emotionally too. Which of these statements feels most like you *right now*?",
     icon: '🧠',
     color: 'from-yellow-100/20 to-orange-300/20',
-    type: 'single-choice' as 'single-choice',
+    type: 'single-choice' as const,
     options: [
       {
         id: 'unsure_need_handholding',
@@ -279,7 +279,7 @@ const QuizPage: React.FC = () => {
     scenario: "Everyone's journey is different. Which of these describe your current situation?",
     icon: '🧩',
     color: 'from-gray-400/20 to-neutral-400/20',
-    type: "multiple-choice" as "multiple-choice",
+    type: "multiple-choice" as const,
     maxSelections: 4,
     options: [
       {
@@ -321,7 +321,7 @@ const QuizPage: React.FC = () => {
     scenario: "Sometimes we don’t even realize we’ve been ‘doing business’ already. Which of these have you done before — even casually?",
     icon: '📦',
     color: 'from-teal-200/20 to-lime-300/20',
-    type: 'multiple-choice' as 'multiple-choice',
+    type: 'multiple-choice' as const,
     maxSelections: 3,
     options: [
       {
@@ -354,7 +354,7 @@ const QuizPage: React.FC = () => {
     scenario: "When you see your dream business thriving, what truly matters most to you?",
     icon: '🌟',
     color: 'from-indigo-400/20 to-blue-400/20',
-    type: "multiple-choice" as "multiple-choice",
+    type: "multiple-choice" as const,
     options: [
       {
         id: 'financial_freedom',
