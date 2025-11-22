@@ -1,4 +1,3 @@
-// src/app/api/roadmaps/[id]/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -27,10 +26,9 @@ function safeParseResources(resources: string | null): {
   }
 }
 
-export async function GET(
-  _req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: Request, context: any) {
+  const { params } = context as { params: { id: string } };
+
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
@@ -55,11 +53,10 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  // Normalize to UI shape
   const normalized = {
     title: roadmap.title,
     description: roadmap.description,
-    image: "",       // safe defaults
+    image: "",
     timeline: "",
     investment: "",
     difficulty: "",
@@ -70,7 +67,7 @@ export async function GET(
         stepId: s.id,
         stepTitle: s.title,
         description: s.content,
-        duration: String(s.stepNumber), // derived from stepNumber
+        duration: String(s.stepNumber),
         tasks: r.tasks,
         downloadables: r.downloadables,
         videoTutorial: r.videoTutorial,
