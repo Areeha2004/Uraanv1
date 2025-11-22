@@ -1,5 +1,3 @@
-// /api/collaborations/[id]/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
@@ -33,7 +31,8 @@ export async function GET(_: NextRequest, { params }: Params) {
 // ------------------ DELETE COLLAB ------------------
 export async function DELETE(_: NextRequest, { params }: Params) {
   try {
-    const session = await getServerSession(import { authOptions } from "@/lib/auth";);
+    const session = await getServerSession(authOptions);
+
     if (!session?.user?.email)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
