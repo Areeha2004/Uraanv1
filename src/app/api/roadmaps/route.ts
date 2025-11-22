@@ -1,7 +1,7 @@
 // // app/api/roadmaps/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { Prisma, PrismaClient } from "@prisma/client"; // keep types
 import  prisma from "@/lib/prisma";
 /** Shape of each step in the incoming request */

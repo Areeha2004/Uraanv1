@@ -1,7 +1,7 @@
 // app/api/user/progress/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { Prisma, PrismaClient } from "@prisma/client"; // keep types
 import  prisma  from "@/lib/prisma";
 type U = Prisma.UserProgressWhereUniqueInput;
