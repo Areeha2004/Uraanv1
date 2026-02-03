@@ -4,12 +4,12 @@ Uraan (meaning "flight" in Urdu) is a Next.js-based web application designed to 
 
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://uraan-ten.vercel.app/)
 
-## 🚀 Live Application
+## Live Application
 
 The application is deployed and can be accessed at:
 **[https://uraan-ten.vercel.app/](https://uraan-ten.vercel.app/)**
 
-## 🌟 Features
+##  Features
 
 - **AI-Powered Quiz**: Analyzes skills, interests, and constraints to recommend suitable business ideas.
 - **Personalized Roadmaps**: Provides detailed implementation plans with timelines and resources.
@@ -17,7 +17,7 @@ The application is deployed and can be accessed at:
 - **Community Support**: Engage with a network of fellow entrepreneurs.
 - **Profile Management**: Showcase your business or service provider profile.
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 - **Frontend**: Next.js 15, React 19, Tailwind CSS, Lucide React
 - **Backend**: Next.js App Router (API Routes)
@@ -26,14 +26,14 @@ The application is deployed and can be accessed at:
 - **AI Integration**: OpenAI GPT-4o-mini
 - **Image Storage**: Cloudinary
 
-## 📋 Prerequisites
+##  Prerequisites
 
 Before you begin, ensure you have the following installed:
 - Node.js (v18.x or later)
 - npm or yarn
 - PostgreSQL database
 
-## ⚙️ Local Development Setup
+##  Local Development Setup
 
 1. **Clone the repository:**
    ```bash
@@ -73,12 +73,7 @@ Before you begin, ensure you have the following installed:
    npm run dev
    ```
 
-6. **Open [http://localhost:3000](http://localhost:3000)** in your browser.
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🤝 Contributing
+##  Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
