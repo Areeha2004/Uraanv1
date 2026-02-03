@@ -113,10 +113,7 @@ export async function POST(req: Request, context: any) {
         requesterId: requester.id,
         receiverId: collaborator.userId,
         projectDescription: body.projectDescription,
-        budget:
-          body.budget !== undefined && body.budget !== null
-            ? body.budget.toString()
-            : undefined,
+        budget: body.budget ? body.budget.toString() : undefined,
         deadline: body.deadline ? new Date(body.deadline) : undefined,
       },
     });

@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Uraan — AI-Powered Business Platform for Pakistani Women Entrepreneurs
 
-## Getting Started
+Uraan (meaning "flight" in Urdu) is a Next.js-based web application designed to empower Pakistani women to launch and grow their own businesses. The platform uses AI to provide personalized business recommendations, step-by-step roadmaps, and a collaborative community marketplace.
 
-First, run the development server:
+## 🚀 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **AI-Powered Quiz**: Analyzes skills, interests, and constraints to recommend suitable business ideas.
+- **Personalized Roadmaps**: Provides detailed implementation plans with timelines and resources.
+- **Collaboration Marketplace**: Connect with service providers to hire for projects.
+- **Community Support**: Engage with a network of fellow entrepreneurs.
+- **Profile Management**: Showcase your business or service provider profile.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Frontend**: Next.js 15, React 19, Tailwind CSS, Lucide React
+- **Backend**: Next.js App Router (API Routes)
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: NextAuth.js (Credentials, Google, Facebook)
+- **AI Integration**: OpenAI GPT-4o-mini
+- **Image Storage**: Cloudinary
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📋 Prerequisites
 
-## Learn More
+Before you begin, ensure you have the following installed:
+- Node.js (v18.x or later)
+- npm or yarn
+- PostgreSQL database
 
-To learn more about Next.js, take a look at the following resources:
+## ⚙️ Installation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/uraan.git
+   cd uraan
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-## Deploy on Vercel
+3. Set up environment variables:
+   Create a `.env` file in the root directory and add the following:
+   ```env
+   DATABASE_URL="postgresql://user:password@localhost:5444/uraan"
+   NEXTAUTH_SECRET="your-nextauth-secret"
+   NEXTAUTH_URL="http://localhost:3000"
+   OPENAI_API_KEY="your-openai-api-key"
+   CLOUDINARY_CLOUD_NAME="your-cloud-name"
+   CLOUDINARY_API_KEY="your-api-key"
+   CLOUDINARY_API_SECRET="your-api-secret"
+   GOOGLE_CLIENT_ID="your-google-client-id"
+   GOOGLE_CLIENT_SECRET="your-google-client-secret"
+   FACEBOOK_CLIENT_ID="your-facebook-client-id"
+   FACEBOOK_CLIENT_SECRET="your-facebook-client-secret"
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. Run Prisma migrations:
+   ```bash
+   npx prisma generate
+   npx prisma db push
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+5. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+6. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
