@@ -2,7 +2,14 @@
 
 Uraan (meaning "flight" in Urdu) is a Next.js-based web application designed to empower Pakistani women to launch and grow their own businesses. The platform uses AI to provide personalized business recommendations, step-by-step roadmaps, and a collaborative community marketplace.
 
-## 🚀 Features
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://uraan-ten.vercel.app/)
+
+## 🚀 Live Application
+
+The application is deployed and can be accessed at:
+**[https://uraan-ten.vercel.app/](https://uraan-ten.vercel.app/)**
+
+## 🌟 Features
 
 - **AI-Powered Quiz**: Analyzes skills, interests, and constraints to recommend suitable business ideas.
 - **Personalized Roadmaps**: Provides detailed implementation plans with timelines and resources.
@@ -26,20 +33,20 @@ Before you begin, ensure you have the following installed:
 - npm or yarn
 - PostgreSQL database
 
-## ⚙️ Installation
+## ⚙️ Local Development Setup
 
-1. Clone the repository:
+1. **Clone the repository:**
    ```bash
    git clone https://github.com/your-username/uraan.git
    cd uraan
    ```
 
-2. Install dependencies:
+2. **Install dependencies:**
    ```bash
    npm install
    ```
 
-3. Set up environment variables:
+3. **Set up environment variables:**
    Create a `.env` file in the root directory and add the following:
    ```env
    DATABASE_URL="postgresql://user:password@localhost:5444/uraan"
@@ -55,18 +62,18 @@ Before you begin, ensure you have the following installed:
    FACEBOOK_CLIENT_SECRET="your-facebook-client-secret"
    ```
 
-4. Run Prisma migrations:
+4. **Run Prisma migrations:**
    ```bash
    npx prisma generate
    npx prisma db push
    ```
 
-5. Start the development server:
+5. **Start the development server:**
    ```bash
    npm run dev
    ```
 
-6. Open [http://localhost:3000](http://localhost:3000) in your browser.
+6. **Open [http://localhost:3000](http://localhost:3000)** in your browser.
 
 ## 📄 License
 
