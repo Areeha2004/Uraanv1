@@ -29,7 +29,8 @@ module.exports = {
         'result-cta-shadow': 'rgba(138, 31, 74, 0.3)',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'serif'],
       },
       spacing: {
         '18': '4.5rem',

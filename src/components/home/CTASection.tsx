@@ -4,62 +4,56 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 
 const CTASection: React.FC = () => {
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-gradient-to-br from-primary via-primary-light to-accent2 rounded-3xl p-8 md:p-12 text-center text-baby-powder relative overflow-hidden">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-10 left-10 w-20 h-20 border border-baby-powder rounded-full"></div>
-            <div className="absolute bottom-10 right-10 w-32 h-32 border border-baby-powder rounded-full"></div>
-            <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-baby-powder rounded-full blur-sm"></div>
+    <section className="relative px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl">
+        <div className="relative overflow-hidden rounded-[1.9rem] border border-primary/20 bg-gradient-to-br from-primary via-primary-light to-accent2 p-6 text-baby-powder shadow-[0_26px_70px_-42px_rgba(46,30,74,0.95)] md:p-9">
+          <div className="pointer-events-none absolute -left-14 top-6 h-44 w-44 rounded-full border border-baby-powder/25" />
+          <div className="pointer-events-none absolute -right-16 bottom-4 h-56 w-56 rounded-full border border-baby-powder/20" />
+          <div className="pointer-events-none absolute inset-0 opacity-70">
+            <div className="absolute left-1/4 top-0 h-full w-px bg-baby-powder/10" />
+            <div className="absolute right-1/4 top-0 h-full w-px bg-baby-powder/10" />
           </div>
 
-          <div className="relative space-y-6">
-            <div className="inline-flex items-center space-x-2 bg-baby-powder/20 backdrop-blur-sm rounded-full px-6 py-2 text-sm font-medium">
-              <Sparkles size={16} />
-              <span>Ready to Start Your Journey?</span>
+          <div className="relative mx-auto max-w-3xl text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-baby-powder/35 bg-baby-powder/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] backdrop-blur-md">
+              <Sparkles size={14} />
+              Premium Founder Journey
             </div>
-
-            <h2 className="text-3xl md:text-4xl font-bold leading-tight">
-              Join 2,500+ Pakistani Women
-              <br />
-              Building Their Dream Businesses
+            <h2 className="font-display mt-5 text-3xl leading-tight md:text-4xl">
+              Start building the brand and business you actually envision
             </h2>
-
-            <p className="text-lg text-baby-powder/90 max-w-2xl mx-auto">
-              Take our AI quiz to discover your perfect business idea and get a personalized roadmap to success. Your entrepreneurial journey starts here.
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-baby-powder/90">
+              Take the AI discovery quiz, get your roadmap, and launch with the confidence of a founder who has a clear system behind her.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+            <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
               <Link
                 href="/QuizPage"
-                className="group inline-flex items-center space-x-2 bg-baby-powder text-primary px-8 py-4 rounded-2xl font-semibold text-lg hover:bg-baby-powder/90 transition-all duration-300 hover:scale-105 shadow-lg"
+                className="group inline-flex items-center justify-center gap-2 rounded-xl bg-baby-powder px-6 py-3 text-sm font-semibold text-primary transition-all duration-300 hover:-translate-y-0.5 hover:bg-baby-powder/90"
               >
-                <span>Start Your Quiz Now</span>
-                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                Start Your Strategy Quiz
+                <ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
               <Link
                 href="/SignupPage"
-                className="inline-flex items-center space-x-2 border-2 border-baby-powder text-baby-powder px-8 py-4 rounded-2xl font-semibold text-lg hover:bg-baby-powder hover:text-primary transition-all duration-300"
+                className="inline-flex items-center justify-center rounded-xl border border-baby-powder/60 px-6 py-3 text-sm font-semibold text-baby-powder transition-all duration-300 hover:-translate-y-0.5 hover:bg-baby-powder hover:text-primary"
               >
-                <span>Sign Up Free</span>
+                Create Free Account
               </Link>
             </div>
 
-            <div className="flex justify-center items-center space-x-6 pt-6 text-baby-powder/80">
-              <div className="text-center">
-                <div className="text-2xl font-bold">Free</div>
-                <div className="text-sm">Forever</div>
+            <div className="mt-6 grid grid-cols-1 gap-3 text-left sm:grid-cols-3">
+              <div className="rounded-xl border border-baby-powder/25 bg-baby-powder/10 p-3">
+                <p className="text-xs uppercase tracking-[0.12em] text-baby-powder/70">Cost</p>
+                <p className="mt-1 text-base font-bold">Free to begin</p>
               </div>
-              <div className="w-px h-12 bg-baby-powder/30"></div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">5 min</div>
-                <div className="text-sm">Quiz Time</div>
+              <div className="rounded-xl border border-baby-powder/25 bg-baby-powder/10 p-3">
+                <p className="text-xs uppercase tracking-[0.12em] text-baby-powder/70">Quiz time</p>
+                <p className="mt-1 text-base font-bold">Under 5 minutes</p>
               </div>
-              <div className="w-px h-12 bg-baby-powder/30"></div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">24/7</div>
-                <div className="text-sm">Support</div>
+              <div className="rounded-xl border border-baby-powder/25 bg-baby-powder/10 p-3">
+                <p className="text-xs uppercase tracking-[0.12em] text-baby-powder/70">Experience needed</p>
+                <p className="mt-1 text-base font-bold">None required</p>
               </div>
             </div>
           </div>

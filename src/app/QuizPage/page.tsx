@@ -40,9 +40,8 @@ const QuizPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [answers, setAnswers] = useState<Answers>({});
   const [reflections, setReflections] = useState<Record<string, string>>({});
-  const [isTransitioning] = useState<boolean>(false); // removed unused setter
 
-  const scenarios = [
+  const scenarios: Scenario[] = [
      {
     id: 'morning_energy',
     title: 'Sunday Morning Energy',
@@ -471,87 +470,88 @@ const QuizPage: React.FC = () => {
   // RENDER
   // --------------------------------------------------
   return (
-    <div className="min-h-screen bg-gradient from-purple-50 via-pink-50 to-orange-50 relative overflow-hidden">
-      {/* Background elements */}
+    <div className="relative isolate min-h-screen overflow-hidden px-4 pb-8 pt-6 sm:px-6 lg:px-8">
+      <div className="aurora-bg absolute inset-0" />
+      <div className="luxury-grid absolute inset-0 opacity-[0.2]" />
+      <div className="pointer-events-none absolute -left-24 top-24 h-80 w-80 rounded-full bg-primary/20 blur-3xl animate-float-gentle" />
+      <div className="pointer-events-none absolute -right-28 top-32 h-96 w-96 rounded-full bg-accent2/20 blur-3xl animate-float-delayed" />
 
-      <div className="relative min-h-screen flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6">
-          <button
-            onClick={() => router.push('/')}
-            className="flex items-center space-x-2 text-text/70 hover:text-primary transition-all duration-300 hover:scale-105"
-          >
-            <ArrowLeft size={20} />
-            <span className="hidden sm:inline">Back to Home</span>
-          </button>
+      <div className="relative mx-auto flex min-h-[calc(100vh-7.5rem)] w-full max-w-6xl flex-col">
+        <div className="premium-card mt-2 rounded-2xl px-4 py-3 sm:px-5">
+          <div className="flex items-center justify-between gap-3">
+            <button
+              onClick={() => router.push('/')}
+              className="inline-flex items-center gap-2 rounded-lg border border-primary/15 bg-baby-powder/85 px-3 py-2 text-sm font-medium text-text/75 transition-all duration-200 hover:border-primary/35 hover:text-primary"
+            >
+              <ArrowLeft size={16} />
+              <span className="hidden sm:inline">Back Home</span>
+            </button>
 
-          <div className="text-center">
-            <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-accent2 bg-clip-text text-transparent">
-              Discover Your Path
-            </h1>
-            <p className="text-sm text-text/70">Let your heart guide the way ✨</p>
+            <div className="text-center">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">Premium Quiz</p>
+              <h1 className="font-display text-2xl text-text sm:text-3xl">Discover Your Business Path</h1>
+            </div>
+
+            <div className="inline-flex items-center gap-1 rounded-full border border-primary/18 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.1em] text-primary">
+              <Sparkles size={13} />
+              URAAN
+            </div>
           </div>
-
-          <div className="w-20" />
         </div>
 
         <QuizProgress current={currentStep + 1} total={totalSteps} />
 
-        {/* MAIN CONTENT */}
-        <div className="flex-1 flex items-center justify-center px-4 py-8">
-          <div className="w-full max-w-2xl transition-all duration-300">
+        <div className="flex-1 py-6 sm:py-8">
+          <div className="mx-auto w-full max-w-4xl animate-reveal-up">
             {content.type === 'reflection' ? (
               <ReflectionArea
                 title={content.title}
                 subtitle={content.subtitle}
                 value={reflections[`reflection_${currentStep}`] ?? ''}
-                onChange={val => handleReflection(currentStep, val)}
+                onChange={(val) => handleReflection(currentStep, val)}
               />
             ) : (
               <ScenarioQuestion
                 scenario={content.scenario}
                 value={answers[content.scenario.id] ?? ''}
-                onChange={val => handleAnswer(content.scenario.id, val)}
+                onChange={(val) => handleAnswer(content.scenario.id, val)}
               />
             )}
           </div>
         </div>
 
-        {/* NAVIGATION */}
-        <div className="p-6">
-          <div className="max-w-2xl mx-auto flex justify-between items-center">
+        <div className="premium-card rounded-2xl p-4 sm:p-5">
+          <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-3">
             <button
               onClick={handlePrevious}
               disabled={currentStep === 0}
-              className={`px-6 py-3 rounded-2xl font-medium transition-all duration-200 ${
+              className={`rounded-xl px-5 py-3 text-sm font-semibold uppercase tracking-[0.1em] transition-all duration-200 ${
                 currentStep === 0
-                  ? 'text-text/30 cursor-not-allowed'
-                  : 'text-text bg-white/70 backdrop-blur-sm border border-primary/20 hover:bg-primary/10 hover:scale-105 shadow-lg'
+                  ? 'cursor-not-allowed border border-text/10 bg-text/5 text-text/35'
+                  : 'border border-primary/20 bg-baby-powder/90 text-text/75 hover:border-primary/35 hover:text-primary'
               }`}
             >
               Previous
             </button>
 
-            <div className="text-center">
-              <p className="text-sm text-text/60">
-                {currentStep + 1} of {totalSteps}
-              </p>
+            <div className="rounded-full border border-primary/15 bg-baby-powder/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-text/60">
+              {currentStep + 1} / {totalSteps}
             </div>
 
             <button
               onClick={handleNext}
               disabled={!isAnswered}
-              className={`group px-8 py-3 rounded-2xl font-semibold transition-all duration-300 ${
+              className={`group inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold uppercase tracking-[0.1em] transition-all duration-300 ${
                 isAnswered
-                  ? 'bg-gradient-to-r from-primary via-primary-light to-accent2 text-baby-powder hover:shadow-xl hover:shadow-primary/30 hover:scale-110'
-                  : 'bg-text/10 text-text/40 cursor-not-allowed'
+                  ? 'bg-gradient-to-r from-primary via-primary-light to-accent2 text-baby-powder shadow-[0_20px_40px_-25px_rgba(138,31,74,0.95)] hover:-translate-y-0.5'
+                  : 'cursor-not-allowed bg-text/10 text-text/40'
               }`}
             >
               {isLastStep ? (
-                <div className="flex items-center space-x-2">
-                  <Sparkles size={20} />
-                  <span>Reveal My Path</span>
-                </div>
+                <>
+                  <Sparkles size={16} />
+                  Reveal My Path
+                </>
               ) : (
                 'Continue'
               )}
@@ -564,3 +564,4 @@ const QuizPage: React.FC = () => {
 };
 
 export default QuizPage;
+

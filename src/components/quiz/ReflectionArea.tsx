@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, Edit3 } from 'lucide-react';
+import { Edit3, Heart, Sparkles } from 'lucide-react';
 
 interface ReflectionAreaProps {
   title: string;
@@ -13,82 +13,55 @@ const ReflectionArea: React.FC<ReflectionAreaProps> = ({ title, subtitle, value,
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="text-center space-y-6">
-        <div className="relative inline-block p-6 rounded-3xl bg-gradient-to-br from-pink-400/20 via-purple-400/20 to-indigo-400/20 backdrop-blur-sm border border-white/20 shadow-xl">
-          <div className="text-6xl animate-pulse">📝</div>
-          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-3xl"></div>
+      <div className="text-center">
+        <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+          <Sparkles size={14} />
+          Reflection moment
         </div>
-        <div className="space-y-3">
-          <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-text via-primary to-accent2 bg-clip-text text-transparent">{title}</h2>
-          <p className="text-lg text-text/80 font-medium">{subtitle}</p>
-        </div>
+        <h2 className="font-display mt-4 text-3xl leading-tight text-text md:text-4xl">{title}</h2>
+        <p className="mx-auto mt-2 max-w-2xl text-base leading-relaxed text-text/72">{subtitle}</p>
       </div>
 
-      {/* Reflection Card */}
-      <div className="max-w-xl mx-auto">
-        <div className={`bg-white/70 backdrop-blur-sm border-2 rounded-3xl p-8 transition-all duration-300 shadow-xl ${
-          isFocused 
-            ? 'border-primary/70 shadow-2xl shadow-primary/20 scale-105' 
-            : 'border-primary/30 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10'
-        }`}>
-          {/* Journal Header */}
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary/30 to-accent2/30 rounded-full flex items-center justify-center shadow-lg">
-              <Edit3 size={18} className="text-primary" />
-            </div>
-            <div>
-              <h3 className="font-bold text-text">Your Personal Journal</h3>
-              <p className="text-sm text-text/70 font-medium">Express yourself freely ✨</p>
-            </div>
+      <div
+        className={`premium-card mx-auto max-w-3xl rounded-3xl p-5 transition-all duration-300 sm:p-6 ${
+          isFocused ? 'border-primary/35 shadow-[0_26px_55px_-38px_rgba(138,31,74,0.9)]' : ''
+        }`}
+      >
+        <div className="mb-4 flex items-center gap-3">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent2 text-baby-powder">
+            <Edit3 size={16} />
           </div>
-
-          {/* Textarea */}
-          <div className="relative">
-            <textarea
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              placeholder="Type your thoughts here... What dreams, concerns, or ideas are on your mind? What feels important to share about your journey?"
-              className="w-full h-36 p-5 bg-gradient-to-br from-baby-powder/70 to-white/70 border border-primary/20 rounded-2xl text-text placeholder-text/60 resize-none focus:outline-none focus:border-primary/70 focus:bg-white/80 focus:shadow-lg transition-all duration-300 font-medium"
-              style={{ 
-                fontFamily: 'inherit',
-                lineHeight: '1.6'
-              }}
-            />
-            
-            {/* Character count */}
-            <div className="absolute bottom-3 right-3 text-xs text-text/50 font-medium bg-white/70 px-2 py-1 rounded-full">
-              {value.length} characters
-            </div>
-          </div>
-
-          {/* Encouragement */}
-          <div className="mt-4 flex items-center space-x-2 text-sm text-text/70 font-medium">
-            <Heart size={16} className="text-primary animate-pulse" />
-            <span>Your thoughts are valuable and will help us understand you better 💫</span>
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.12em] text-text/60">Founder notes</p>
+            <p className="text-sm text-text/70">Optional, but useful for better recommendations</p>
           </div>
         </div>
 
-        {/* Skip Option */}
-        <div className="text-center mt-6">
+        <div className="relative">
+          <textarea
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            placeholder="Share your goals, doubts, or anything you want URAAN to understand."
+            className="h-40 w-full resize-none rounded-2xl border border-primary/20 bg-baby-powder/80 p-4 text-sm leading-relaxed text-text placeholder:text-text/50 focus:border-primary/45 focus:outline-none"
+          />
+          <div className="absolute bottom-3 right-3 rounded-full border border-primary/15 bg-baby-powder/90 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-text/55">
+            {value.length} chars
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="inline-flex items-center gap-2 text-sm text-text/65">
+            <Heart size={15} className="text-primary" />
+            Your context helps us personalize your path.
+          </div>
           <button
             onClick={() => onChange('')}
-            className="text-sm text-text/60 hover:text-primary transition-all duration-300 underline decoration-dotted hover:scale-105 font-medium"
+            className="text-xs font-semibold uppercase tracking-[0.1em] text-text/55 underline decoration-primary/40 underline-offset-4 transition-colors hover:text-primary"
           >
-            I&apos;d prefer to skip this reflection
+            Skip this step
           </button>
-        </div>
-      </div>
-
-      {/* Inspirational Quote */}
-      <div className="text-center">
-        <div className="bg-gradient-to-r from-primary/20 via-accent2/20 to-purple-400/20 rounded-2xl p-6 max-w-md mx-auto shadow-lg border border-primary/20">
-          <p className="text-sm text-text/80 italic font-medium">
-            &quot;The cave you fear to enter holds the treasure you seek.&quot;
-          </p>
-          <p className="text-xs text-text/60 mt-2 font-semibold">— Joseph Campbell</p>
         </div>
       </div>
     </div>

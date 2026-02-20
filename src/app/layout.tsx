@@ -1,20 +1,28 @@
 import './globals.css';
-import { Inter } from 'next/font/google';
-import Script from 'next/script';
+import { Manrope, Playfair_Display } from 'next/font/google';
 
-import Navigation from "../components/Navigation"
-import Footer from "../components/Footer"
-import { Providers } from "./Providers"
+import Navigation from '../components/Navigation';
+import Footer from '../components/Footer';
+import { Providers } from './Providers';
 
-export const metadata = { title: "Uraan — Your Launch Begins Here" }
+const manrope = Manrope({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  weight: ['400', '500', '600', '700', '800'],
+});
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-display',
+  weight: ['600', '700', '800'],
+});
+
+export const metadata = { title: 'Uraan - Your Launch Begins Here' };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <head>
-        {/* your <link> tags */}
-      </head>
-      <body>
+      <body className={`${manrope.variable} ${playfair.variable}`}>
         <Providers>
           <div className="min-h-screen bg-gradient-to-br from-base to-baby-powder">
             <Navigation />
@@ -24,5 +32,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Providers>
       </body>
     </html>
-  )
+  );
 }
