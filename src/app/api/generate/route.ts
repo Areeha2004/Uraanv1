@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { getServerSession } from "next-auth";
+import { Prisma } from "@prisma/client";
 
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
@@ -9,13 +10,18 @@ import { authOptions } from "@/lib/auth";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req: Request) {
+  let userId: string | null = null;
+  let reservedSlot = false;
+  let previousCreatedAt: Date | null = null;
+  let reservationTimestamp: Date | null = null;
+
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id && !session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    let userId: string | null = session.user.id ?? null;
+    userId = session.user.id ?? null;
 
     if (!userId && session.user.email) {
       const user = await prisma.user.findUnique({
@@ -29,14 +35,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    const now = new Date();
+    reservationTimestamp = now;
+
     const lastGeneration = await prisma.aIResponse.findUnique({
       where: { userId },
       select: { createdAt: true },
     });
 
-    if (lastGeneration?.createdAt) {
-      const now = new Date();
-      const nextEligibleAt = new Date(lastGeneration.createdAt);
+    previousCreatedAt = lastGeneration?.createdAt ?? null;
+
+    if (previousCreatedAt) {
+      const nextEligibleAt = new Date(previousCreatedAt);
       nextEligibleAt.setMonth(nextEligibleAt.getMonth() + 1);
 
       if (now < nextEligibleAt) {
@@ -51,6 +61,90 @@ export async function POST(req: Request) {
           },
           { status: 429 }
         );
+      }
+    }
+
+    if (previousCreatedAt) {
+      const reserved = await prisma.aIResponse.updateMany({
+        where: {
+          userId,
+          createdAt: previousCreatedAt,
+        },
+        data: {
+          createdAt: now,
+        },
+      });
+
+      if (reserved.count !== 1) {
+        const latest = await prisma.aIResponse.findUnique({
+          where: { userId },
+          select: { createdAt: true },
+        });
+
+        if (latest?.createdAt) {
+          const nextEligibleAt = new Date(latest.createdAt);
+          nextEligibleAt.setMonth(nextEligibleAt.getMonth() + 1);
+          const msLeft = nextEligibleAt.getTime() - now.getTime();
+          const daysRemaining = Math.max(1, Math.ceil(msLeft / (1000 * 60 * 60 * 24)));
+
+          return NextResponse.json(
+            {
+              error: `You can generate ideas once per month. Next generation available on ${nextEligibleAt.toISOString()}.`,
+              nextEligibleAt: nextEligibleAt.toISOString(),
+              daysRemaining,
+            },
+            { status: 429 }
+          );
+        }
+
+        return NextResponse.json(
+          { error: "Could not reserve generation quota. Please retry." },
+          { status: 409 }
+        );
+      }
+
+      reservedSlot = true;
+    } else {
+      try {
+        await prisma.aIResponse.create({
+          data: {
+            userId,
+            createdAt: now,
+            content: {
+              status: "generation_reserved",
+              reservedAt: now.toISOString(),
+            },
+          },
+        });
+        reservedSlot = true;
+      } catch (createErr: unknown) {
+        if (
+          createErr instanceof Prisma.PrismaClientKnownRequestError &&
+          createErr.code === "P2002"
+        ) {
+          const latest = await prisma.aIResponse.findUnique({
+            where: { userId },
+            select: { createdAt: true },
+          });
+
+          if (latest?.createdAt) {
+            const nextEligibleAt = new Date(latest.createdAt);
+            nextEligibleAt.setMonth(nextEligibleAt.getMonth() + 1);
+            const msLeft = nextEligibleAt.getTime() - now.getTime();
+            const daysRemaining = Math.max(1, Math.ceil(msLeft / (1000 * 60 * 60 * 24)));
+
+            return NextResponse.json(
+              {
+                error: `You can generate ideas once per month. Next generation available on ${nextEligibleAt.toISOString()}.`,
+                nextEligibleAt: nextEligibleAt.toISOString(),
+                daysRemaining,
+              },
+              { status: 429 }
+            );
+          }
+        }
+
+        throw createErr;
       }
     }
 
@@ -189,20 +283,40 @@ export async function POST(req: Request) {
     }
     result.businessCard.image = result?.businessCard?.image || fallbackImage;
 
-    await prisma.aIResponse.upsert({
+    await prisma.aIResponse.update({
       where: { userId },
-      create: {
-        userId,
+      data: {
         content: result,
-      },
-      update: {
-        content: result,
-        createdAt: new Date(),
       },
     });
 
     return NextResponse.json(result);
   } catch (error: unknown) {
+    if (reservedSlot && userId && reservationTimestamp) {
+      try {
+        if (previousCreatedAt) {
+          await prisma.aIResponse.updateMany({
+            where: {
+              userId,
+              createdAt: reservationTimestamp,
+            },
+            data: {
+              createdAt: previousCreatedAt,
+            },
+          });
+        } else {
+          await prisma.aIResponse.deleteMany({
+            where: {
+              userId,
+              createdAt: reservationTimestamp,
+            },
+          });
+        }
+      } catch (rollbackError) {
+        console.error("Quota rollback failed:", rollbackError);
+      }
+    }
+
     console.error("OpenAI Error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: errorMessage }, { status: 500 });

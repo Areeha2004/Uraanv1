@@ -91,7 +91,9 @@ const DashboardPage: React.FC = () => {
 
   const userData = {
     name: session.user.name || 'Founder',
-    avatar: session.user.image || '/fallback-avatar.png',
+    avatar:
+      session.user.image ||
+      'https://media.istockphoto.com/id/498366234/photo/notepad-with-home-based-business-on-the-wooden-table.jpg?s=612x612&w=0&k=20&c=XxPsIAJDs5bT7spQBEFspWx9Wkfb1b7slClYljpqS3o=',
     businessIdea: primary ? primary.title : 'No roadmap selected yet',
     roadmapId: primary?.id || '',
     joinDate: 'January 2025',
@@ -264,7 +266,7 @@ const DashboardPage: React.FC = () => {
                 <h1 className="font-display mt-1 text-3xl leading-tight text-text sm:text-4xl">
                   Welcome back, {userData.name}
                 </h1>
-                <p className="mt-2 text-sm text-text/72 sm:text-base">
+                <p className="mt-2 text-sm text-text/72 sm:text-primary">
                   Building: <span className="font-semibold text-text">{userData.businessIdea}</span>
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-2">

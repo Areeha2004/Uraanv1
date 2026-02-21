@@ -229,7 +229,7 @@ export default function RoadmapPage() {
               <img
                 src={
                   image ||
-                  'https://images.prismic.io/justremote/c0bba365-3ac6-4071-9834-32e374da043a_work-from-home.jpeg?auto=compress,format'
+                  'https://media.istockphoto.com/id/498366234/photo/notepad-with-home-based-business-on-the-wooden-table.jpg?s=612x612&w=0&k=20&c=XxPsIAJDs5bT7spQBEFspWx9Wkfb1b7slClYljpqS3o='
                 }
                 alt={title}
                 className="h-full w-full object-cover"

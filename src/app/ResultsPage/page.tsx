@@ -40,6 +40,11 @@ interface BusinessIdea {
   roadmap: RoadmapStep[];
 }
 
+interface GenerationLimitInfo {
+  nextEligibleAt: string;
+  daysRemaining: number;
+}
+
 export default function ResultsPage() {
   const router = useRouter();
   const hasFetched = useRef(false);
@@ -48,6 +53,7 @@ export default function ResultsPage() {
   const [loading, setLoading] = useState(true);
   const [ideas, setIdeas] = useState<BusinessIdea[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [generationLimit, setGenerationLimit] = useState<GenerationLimitInfo | null>(null);
   const [savingIdeaId, setSavingIdeaId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -59,6 +65,7 @@ export default function ResultsPage() {
   const fetchIdeas = useCallback(async (rawParam: string) => {
     setLoading(true);
     setError(null);
+    setGenerationLimit(null);
 
     try {
       const parsed = parseQuizData(rawParam);
@@ -80,6 +87,12 @@ export default function ResultsPage() {
 
       if (!res.ok) {
         const errData = await res.json().catch(() => null);
+        if (res.status === 429 && errData?.nextEligibleAt) {
+          setGenerationLimit({
+            nextEligibleAt: String(errData.nextEligibleAt),
+            daysRemaining: Number(errData.daysRemaining) || 0,
+          });
+        }
         throw new Error(errData?.error || `Generation API failed (${res.status})`);
       }
 
@@ -175,22 +188,60 @@ export default function ResultsPage() {
   }
 
   if (error) {
+    const nextEligibleDate =
+      generationLimit?.nextEligibleAt
+        ? new Date(generationLimit.nextEligibleAt).toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+          })
+        : null;
+
     return (
       <div className="relative isolate min-h-screen overflow-hidden px-4 pb-10 pt-10 sm:px-6 lg:px-8">
         <div className="aurora-bg absolute inset-0" />
         <div className="luxury-grid absolute inset-0 opacity-[0.18]" />
         <div className="relative mx-auto max-w-2xl">
           <div className="premium-card rounded-3xl p-8 text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Generation failed</p>
-            <h2 className="font-display mt-2 text-3xl text-text">We hit a temporary issue</h2>
-            <p className="mt-3 text-text/70">{error}</p>
-            <button
-              onClick={() => fetchIdeas(rawParsedParam ?? '')}
-              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-baby-powder"
-            >
-              Retry Generation
-              <ArrowRight size={15} />
-            </button>
+            {generationLimit ? (
+              <>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Monthly generation limit reached</p>
+                <h2 className="font-display mt-2 text-3xl text-text">You have used this month&apos;s AI generation</h2>
+                <p className="mt-3 text-text/70">
+                  To optimize token usage, each account can generate ideas once per month.
+                </p>
+                <div className="mt-5 rounded-2xl border border-primary/20 bg-primary/8 p-4">
+                  <p className="text-sm font-semibold text-text">
+                    {generationLimit.daysRemaining > 0
+                      ? `${generationLimit.daysRemaining} day${generationLimit.daysRemaining === 1 ? '' : 's'} remaining`
+                      : 'Available soon'}
+                  </p>
+                  {nextEligibleDate && (
+                    <p className="mt-1 text-sm text-text/70">Next generation date: {nextEligibleDate}</p>
+                  )}
+                </div>
+                <button
+                  onClick={() => router.push('/DashboardPage')}
+                  className="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-baby-powder"
+                >
+                  Go To Dashboard
+                  <ArrowRight size={15} />
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Generation failed</p>
+                <h2 className="font-display mt-2 text-3xl text-text">We hit a temporary issue</h2>
+                <p className="mt-3 text-text/70">{error}</p>
+                <button
+                  onClick={() => fetchIdeas(rawParsedParam ?? '')}
+                  className="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-baby-powder"
+                >
+                  Retry Generation
+                  <ArrowRight size={15} />
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
