@@ -1,23 +1,26 @@
-"use client";
-import React, { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
-import Link from "next/link";
-import { useSession } from "next-auth/react";
+'use client';
+
+import React, { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import {
   ArrowLeft,
-  Star,
-  MapPin,
-  Clock,
-  CheckCircle,
   Award,
-  MessageCircle,
-  Heart,
-  Download,
-  ExternalLink,
   Calendar,
+  CheckCircle2,
+  Clock,
   DollarSign,
-} from "lucide-react";
-import HireCollaboratorModal from "../../../components/collaboration/HireCollaboratorModal";
+  ExternalLink,
+  MapPin,
+  MessageCircle,
+  ShieldCheck,
+  Star,
+  Users,
+} from 'lucide-react';
+
+import HireCollaboratorModal from '../../../components/collaboration/HireCollaboratorModal';
+
 interface Review {
   id: number;
   client: string;
@@ -27,6 +30,7 @@ interface Review {
   date: string;
   avatar: string;
 }
+
 interface Package {
   name: string;
   price: string;
@@ -35,14 +39,15 @@ interface Package {
 }
 
 interface PortfolioItem {
-  id: number;
+  id: string;
   title: string;
   image: string;
   category: string;
+  url: string;
 }
 
 interface Collaborator {
- id: string;      // was number
+  id: string;
   userId: string;
   name: string;
   title: string;
@@ -51,332 +56,425 @@ interface Collaborator {
   image: string;
   rating: number;
   reviewsCount: number;
-  completedProjects?: number;
+  completedProjects: number;
   responseTime: string;
   startingPrice: string;
-  category?: string;
+  category: string;
   skills: string[];
+  bio: string;
   portfolio: PortfolioItem[];
   verified: boolean;
   topRated: boolean;
 }
- const CollaboratorProfilePage: React.FC = () => {
+
+type ActiveTab = 'portfolio' | 'about' | 'reviews';
+
+const staticReviews: Review[] = [
+  {
+    id: 1,
+    client: 'Fatima Ahmed',
+    rating: 5,
+    comment: 'Outstanding quality and very clear communication. The final outcome was better than expected.',
+    project: 'Logo Design',
+    date: '2 weeks ago',
+    avatar: 'https://images.pexels.com/photos/3769021/pexels-photo-3769021.jpeg',
+  },
+  {
+    id: 2,
+    client: 'Ayesha Khan',
+    rating: 5,
+    comment: 'Delivered on time with excellent revisions support. Highly recommended for founder branding projects.',
+    project: 'Brand Identity Package',
+    date: '1 month ago',
+    avatar: 'https://images.pexels.com/photos/3184639/pexels-photo-3184639.jpeg',
+  },
+  {
+    id: 3,
+    client: 'Zara Butt',
+    rating: 4,
+    comment: 'Great collaboration and creative execution. Smooth process from kickoff to delivery.',
+    project: 'Social Media Graphics',
+    date: '2 months ago',
+    avatar: 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg',
+  },
+];
+
+const staticPackages: Package[] = [
+  {
+    name: 'Basic Package',
+    price: 'PKR 15,000',
+    deliveryTime: '3 days',
+    features: ['1 concept', '3 revisions', 'Export files', 'Basic delivery support'],
+  },
+  {
+    name: 'Standard Package',
+    price: 'PKR 35,000',
+    deliveryTime: '7 days',
+    features: ['3 concepts', 'Unlimited revisions', 'Brand kit', 'Social media assets'],
+  },
+  {
+    name: 'Premium Package',
+    price: 'PKR 65,000',
+    deliveryTime: '14 days',
+    features: ['Full identity system', 'Priority support', 'Marketing assets', 'Extended handover'],
+  },
+];
+
+const languages = ['English', 'Urdu', 'Punjabi'];
+
+const CollaboratorProfilePage: React.FC = () => {
   const { id } = useParams();
+  const collaboratorId = String(id ?? '');
+
+  const { data: session, status } = useSession();
+
   const [showHireModal, setShowHireModal] = useState(false);
-  const [activeTab, setActiveTab] = useState("portfolio");
+  const [activeTab, setActiveTab] = useState<ActiveTab>('portfolio');
   const [collaborator, setCollaborator] = useState<Collaborator | null>(null);
   const [loading, setLoading] = useState(true);
-const { data: session, status } = useSession();
-
-// Only calculate when both are loaded
-const userIsHiring =
-  status === "authenticated" &&
-  collaborator?.userId && // ensures collaborator is defined
-  session.user.id !== collaborator.userId;
-
-  const staticReviews = [
-     {
-      id: 1,
-      client: 'Fatima Ahmed',
-      rating: 5,
-      comment: 'Sana created the perfect logo for my boutique...',
-      project: 'Logo Design',
-      date: '2 weeks ago',
-      avatar: 'https://images.pexels.com/photos/3769021/pexels-photo-3769021.jpeg',
-    },
-    {
-      id: 2,
-      client: 'Ayesha Khan',
-      rating: 5,
-      comment: 'Professional, creative, and delivered on time...',
-      project: 'Brand Identity Package',
-      date: '1 month ago',
-      avatar: 'https://images.pexels.com/photos/3184639/pexels-photo-3184639.jpeg',
-    },
-    {
-      id: 3,
-      client: 'Zara Butt',
-      rating: 4,
-      comment: 'Great communication and beautiful designs...',
-      project: 'Social Media Graphics',
-      date: '2 months ago',
-      avatar: 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg',
-    },
-  ];
-  const languages = ['English', 'Urdu', 'Punjabi'];
-  const staticPackages = [
-     {
-        name: 'Basic Logo',
-        price: '₨15,000',
-        deliveryTime: '3 days',
-        features: ['1 Logo concept', '3 revisions', 'High-res files', 'Basic brand colors']
-      },
-      {
-        name: 'Standard Brand',
-        price: '₨35,000',
-        deliveryTime: '7 days',
-        features: ['3 Logo concepts', 'Unlimited revisions', 'Brand guidelines', 'Social media kit', 'Print-ready files']
-      },
-      {
-        name: 'Premium Identity',
-        price: '₨65,000',
-        deliveryTime: '14 days',
-        features: ['5 Logo concepts', 'Complete brand identity', 'Marketing materials', 'Website mockups', '6 months support']
-      }
-  ];
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-  async function fetchData() {
-    try {
-      const res = await fetch(`/api/collaborators/${id}`);
-      if (!res.ok) throw new Error("Failed to fetch collaborator");
+    if (!collaboratorId) return;
 
-      const entry = await res.json();
+    async function fetchData() {
+      try {
+        setLoading(true);
+        setError(null);
 
-      const mapped: Collaborator = {
-        id: String(entry.id || entry.id,),
-       userId: String(entry.userId || entry.user?.id || ""),
-        name: entry.user?.name || "",
-        title: entry.title || "",
-        location: entry.location || entry.user?.location || "",
-        avatar: entry.avatar || entry.user?.image || "",
-        image: entry.user.image || entry.user?.avatar || "",
-        rating: entry.rating || 0,
-        reviewsCount: entry.reviewsCount || 0,
-        responseTime: entry.responseTime || "",
-        startingPrice: entry.startingPrice || "",
-        skills: entry.skills || [],
-      portfolio: (entry.portfolio || []).map((p: { title?: string; serviceType?: string; url?: string; image?: string }) => ({
-  title: p.title || "",
-  serviceType: p.serviceType || "",
-  url: p.url || "",
-  image: (p.image && p.image.trim() !== "") ? p.image : p.url || "", // fallback to url
-})),
+        const res = await fetch(`/api/collaborators/${collaboratorId}`);
+        if (!res.ok) throw new Error('Failed to fetch collaborator profile');
 
+        const entry = await res.json();
 
-        verified: !!entry.verified,
-        topRated: !!entry.topRated,
-      };
+        const normalizedPortfolio: PortfolioItem[] = Array.isArray(entry.portfolio)
+          ? entry.portfolio.map((item: { title?: string; serviceType?: string; url?: string; image?: string }, index: number) => ({
+              id: `${index}-${item.title || 'portfolio'}`,
+              title: item.title || 'Portfolio item',
+              category: item.serviceType || 'General',
+              url: item.url || '',
+              image: item.image || item.url || '/default-profile.png',
+            }))
+          : [];
 
-      setCollaborator(mapped);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+        const mapped: Collaborator = {
+          id: String(entry.id || ''),
+          userId: String(entry.userId || ''),
+          name: entry.user?.name || 'Collaborator',
+          title: entry.title || 'Freelance Specialist',
+          location: entry.location || entry.user?.location || 'Pakistan',
+          avatar: entry.avatar || entry.user?.image || '/default-profile.png',
+          image: entry.user?.image || '/default-profile.png',
+          rating: entry.rating || 0,
+          reviewsCount: entry.reviewsCount || 0,
+          completedProjects: entry.completedProjects || 0,
+          responseTime: entry.responseTime || '24h',
+          startingPrice: entry.startingPrice || 'PKR 0',
+          category: entry.category || 'general',
+          skills: Array.isArray(entry.skills) ? entry.skills : [],
+          bio:
+            entry.user?.bio ||
+            'Experienced collaborator focused on helping founders move from ideas to execution.',
+          portfolio: normalizedPortfolio,
+          verified: !!entry.verified,
+          topRated: !!entry.topRated,
+        };
+
+        setCollaborator(mapped);
+      } catch (err: unknown) {
+        console.error(err);
+        setError(err instanceof Error ? err.message : 'Something went wrong loading profile.');
+      } finally {
+        setLoading(false);
+      }
     }
+
+    fetchData();
+  }, [collaboratorId]);
+
+  const userIsHiring = useMemo(() => {
+    if (status !== 'authenticated' || !collaborator?.userId || !session?.user?.id) return true;
+    return session.user.id !== collaborator.userId;
+  }, [status, collaborator?.userId, session?.user?.id]);
+
+  if (loading) {
+    return (
+      <div className="relative isolate min-h-screen overflow-hidden px-4 pb-10 pt-8 sm:px-6 lg:px-8">
+        <div className="aurora-bg absolute inset-0" />
+        <div className="luxury-grid absolute inset-0 opacity-[0.18]" />
+        <div className="relative mx-auto max-w-3xl">
+          <div className="premium-card rounded-3xl p-10 text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Loading profile</p>
+            <h2 className="font-display mt-3 text-4xl text-text">Preparing collaborator workspace</h2>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  if (id) fetchData();
-}, [id]);
+  if (error || !collaborator) {
+    return (
+      <div className="relative isolate min-h-screen overflow-hidden px-4 pb-10 pt-8 sm:px-6 lg:px-8">
+        <div className="aurora-bg absolute inset-0" />
+        <div className="luxury-grid absolute inset-0 opacity-[0.18]" />
+        <div className="relative mx-auto max-w-2xl">
+          <div className="premium-card rounded-3xl p-8 text-center">
+            <h2 className="font-display text-3xl text-text">Collaborator not available</h2>
+            <p className="mt-3 text-text/70">{error || 'Profile could not be loaded.'}</p>
+            <Link
+              href="/CollaborationPage"
+              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-baby-powder"
+            >
+              <ArrowLeft size={14} />
+              Back to Collaborators
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-if (loading) {
-  return <div className="p-6 text-center">Loading...</div>;
-}
-
-if (!collaborator) {
-  return <div className="p-6 text-center text-red-500">Collaborator not found</div>;
-}
+  const stats = [
+    {
+      label: 'Rating',
+      value: collaborator.rating.toFixed(1),
+      sub: `${collaborator.reviewsCount} reviews`,
+      icon: Star,
+    },
+    {
+      label: 'Projects',
+      value: `${collaborator.completedProjects}`,
+      sub: 'Completed',
+      icon: CheckCircle2,
+    },
+    {
+      label: 'Response',
+      value: collaborator.responseTime,
+      sub: 'Typical reply',
+      icon: Clock,
+    },
+    {
+      label: 'Starting',
+      value: collaborator.startingPrice,
+      sub: 'Base budget',
+      icon: DollarSign,
+    },
+  ];
+  const coverSrc =
+    collaborator.avatar ||
+    collaborator.portfolio[0]?.image ||
+    collaborator.image ||
+    '/default-profile.png';
+  const avatarSrc = collaborator.image || collaborator.avatar || '/default-profile.png';
+  const initials = collaborator.name
+    .split(' ')
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
+    <div className="relative isolate min-h-screen overflow-hidden px-4 pb-10 pt-8 sm:px-6 lg:px-8">
+      <div className="aurora-bg absolute inset-0" />
+      <div className="luxury-grid absolute inset-0 opacity-[0.18]" />
+      <div className="pointer-events-none absolute -left-24 top-24 h-80 w-80 rounded-full bg-primary/20 blur-3xl animate-float-gentle" />
+      <div className="pointer-events-none absolute -right-24 top-32 h-96 w-96 rounded-full bg-accent2/20 blur-3xl animate-float-delayed" />
 
-    <div className="pt-16 min-h-screen bg-gradient-to-br from-base to-baby-powder">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Back Button */}
+      <div className="relative mx-auto max-w-7xl">
         <Link
           href="/CollaborationPage"
-          className="inline-flex items-center space-x-2 text-text/70 hover:text-primary transition-colors mb-6"
+          className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-baby-powder/85 px-4 py-2 text-xs font-semibold uppercase tracking-[0.1em] text-primary transition-colors hover:border-primary/35"
         >
-          <ArrowLeft size={20} />
-          <span>Back to Collaborators</span>
+          <ArrowLeft size={14} />
+          Back to Collaborators
         </Link>
 
-        {/* Header Section */}
-        <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-3xl overflow-hidden mb-8">
-          {/* Cover Image */}
-
-          <div className="relative h-48 md:h-64">
-            <img
-              src={collaborator.avatar}
-              alt="Cover"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-accent1/60 to-transparent"></div>
-
-            {/* Badges */}
-            <div className="absolute top-6 right-6 flex space-x-2">
+        <section className="premium-card mt-5 overflow-hidden rounded-[2rem] border border-primary/20 bg-baby-powder/80 shadow-[0_18px_48px_rgba(80,61,63,0.08)]">
+          <div
+            className="relative h-56 bg-cover bg-center sm:h-72"
+            style={{ backgroundImage: `url(${coverSrc})` }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-t from-text/75 via-text/30 to-transparent" />
+            <div className="absolute right-5 top-5 flex flex-wrap gap-2">
               {collaborator.verified && (
-                <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1">
-                  <CheckCircle size={14} />
-                  <span>Verified</span>
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300/40 bg-emerald-100/75 px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-emerald-700">
+                  <ShieldCheck size={13} />
+                  Verified
                 </span>
               )}
               {collaborator.topRated && (
-                <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1">
-                  <Award size={14} />
-                  <span>Top Rated</span>
+                <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/40 bg-amber-100/75 px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-amber-700">
+                  <Award size={13} />
+                  Top Rated
                 </span>
+              )}
+            </div>
+            <div className="absolute bottom-4 left-5 right-5 flex flex-wrap items-center justify-between gap-2">
+              <span className="rounded-full border border-baby-powder/35 bg-baby-powder/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-baby-powder">
+                {collaborator.category}
+              </span>
+              <span className="rounded-full border border-baby-powder/35 bg-baby-powder/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-baby-powder">
+                {collaborator.responseTime} response
+              </span>
+            </div>
+            <div className="absolute -bottom-10 left-6 z-20 rounded-2xl bg-baby-powder p-1.5 shadow-2xl ring-1 ring-primary/15 sm:-bottom-12">
+              {avatarSrc ? (
+                <img
+                  src={avatarSrc}
+                  alt={collaborator.name}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = '/default-profile.png';
+                  }}
+                  className="h-20 w-20 rounded-xl object-cover sm:h-24 sm:w-24"
+                />
+              ) : (
+                <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-primary/10 text-2xl font-semibold uppercase text-primary sm:h-24 sm:w-24">
+                  {initials || 'U'}
+                </div>
               )}
             </div>
           </div>
 
-          {/* Profile Info */}
-          <div className="p-8">
-            <div className="flex flex-col md:flex-row items-start md:items-center space-y-6 md:space-y-0 md:space-x-8">
-              {/* Avatar */}
-              <div className="relative">
-                <img
-                  src={collaborator.image}
-                  alt={collaborator.name}
-                  className="w-32 h-32 rounded-3xl border-4 border-baby-powder object-cover shadow-xl"
-                />
-                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-400 rounded-full border-4 border-baby-powder"></div>
-              </div>
-
-              {/* Info */}
-              <div className="flex-1 space-y-4">
-                <div>
-                  <h1 className="text-3xl font-bold text-text mb-2">{collaborator.name}</h1>
-                  <p className="text-lg text-text/70 mb-3">{collaborator.title}</p>
-                  <div className="flex items-center space-x-4 text-sm text-text/60">
-                    <div className="flex items-center space-x-1">
-                      <MapPin size={14} className="text-primary" />
-                      <span>{collaborator.location}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Calendar size={14} className="text-primary" />
-                      <span>Joined : since 2025</span>
-                    </div>
-                  </div>
+          <div className="p-6 pt-14 sm:p-8 sm:pt-16">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Collaborator Profile</p>
+                <h1 className="font-display mt-1 text-3xl leading-tight text-text sm:text-4xl">
+                  {collaborator.name}
+                </h1>
+                <p className="mt-1 text-base text-text/70">{collaborator.title}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.08em] text-text/60">
+                  <span className="inline-flex items-center gap-1">
+                    <MapPin size={12} className="text-primary" />
+                    {collaborator.location}
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <Calendar size={12} className="text-primary" />
+                    Member since 2025
+                  </span>
                 </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-  <div className="text-center p-3 bg-baby-powder/50 rounded-xl">
-    <div className="flex items-center justify-center space-x-1 mb-1">
-      <Star className="text-yellow-400" size={16} fill="currentColor" />
-      <span className="font-bold text-text">{collaborator.rating}</span>
-    </div>
-    <p className="text-xs text-text/60">{collaborator.rating} reviews</p>
-  </div>
-  <div className="text-center p-3 bg-baby-powder/50 rounded-xl">
-    <div className="flex items-center justify-center mb-1">
-      <CheckCircle className="text-green-500" size={16} />
-    </div>
-    <p className="text-xs text-text/60">{collaborator.completedProjects} projects</p>
-  </div>
-  <div className="text-center p-3 bg-baby-powder/50 rounded-xl">
-    <div className="flex items-center justify-center space-x-1 mb-1">
-      <Clock className="text-primary" size={16} />
-      <span className="font-bold text-text text-sm">{collaborator.responseTime}</span>
-    </div>
-    <p className="text-xs text-text/60">Response time</p>
-  </div>
-  <div className="text-center p-3 bg-baby-powder/50 rounded-xl">
-    <div className="flex items-center justify-center space-x-1 mb-1">
-      <DollarSign className="text-primary" size={16} />
-      <span className="font-bold text-text text-sm">{collaborator.startingPrice}</span>
-    </div>
-    <p className="text-xs text-text/60">Starting at</p>
-  </div>
-</div>
-
               </div>
 
-              {/* CTA */}
-              <div className="flex flex-col space-y-3">
-                <button
-                  onClick={() => setShowHireModal(true)}
-                  className="bg-gradient-to-r from-primary to-primary-light text-baby-powder px-8 py-4 rounded-2xl font-semibold hover:shadow-lg hover:shadow-result-cta-shadow transition-all duration-300 hover:scale-105"
-                >
-                  Hire Collaborator
-                </button>
-                <button className="bg-glass-bg backdrop-blur-sm border border-secondary/30 text-text px-8 py-3 rounded-2xl font-medium hover:bg-secondary/20 transition-all duration-300">
-                  Send Message
-                </button>
+              <div className="rounded-2xl border border-primary/20 bg-baby-powder/90 p-3 shadow-[0_10px_26px_rgba(80,61,63,0.07)]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-primary">Hire Collaborator</p>
+                <p className="mt-1 text-xs text-text/65">
+                  Starting at <span className="font-semibold text-primary">{collaborator.startingPrice}</span> with{' '}
+                  {collaborator.responseTime} response time.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setShowHireModal(true)}
+                    disabled={!userIsHiring}
+                    className={`inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] transition-all duration-300 ${
+                      userIsHiring
+                        ? 'bg-gradient-to-r from-primary to-primary-light text-baby-powder hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(175,130,137,0.3)]'
+                        : 'cursor-not-allowed bg-text/10 text-text/45'
+                    }`}
+                  >
+                    <Users size={14} />
+                    {userIsHiring ? 'Hire Now' : 'Your Profile'}
+                  </button>
+                  <button className="inline-flex items-center gap-2 rounded-xl border border-primary/25 bg-baby-powder px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-primary transition-colors hover:border-primary/35">
+                    <MessageCircle size={14} />
+                    Send Message
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Content Tabs */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Navigation Tabs */}
-            <div className="flex space-x-4 border-b border-secondary/20">
-              {[
-                { id: 'portfolio', label: 'Portfolio' },
-                { id: 'about', label: 'About' },
-                { id: 'reviews', label: 'Reviews' }
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-6 py-3 font-medium transition-all duration-200 border-b-2 ${
-                    activeTab === tab.id
-                      ? 'border-primary text-primary'
-                      : 'border-transparent text-text/70 hover:text-primary'
-                  }`}
-                >
-                  {tab.label}
-                </button>
+            <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {stats.map((stat) => (
+                <article key={stat.label} className="rounded-2xl border border-primary/20 bg-baby-powder/92 p-3 shadow-[0_8px_22px_rgba(80,61,63,0.05)]">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-text/55">{stat.label}</p>
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <stat.icon size={15} />
+                    </span>
+                  </div>
+                  <p className="mt-2 text-base font-semibold text-text">{stat.value}</p>
+                  <p className="text-[11px] uppercase tracking-[0.08em] text-text/55">{stat.sub}</p>
+                </article>
               ))}
             </div>
+          </div>
+        </section>
 
-            {/* Portfolio Tab */}
-{activeTab === 'portfolio' && (
-  <div className="space-y-6">
-    <h3 className="text-2xl font-bold text-text">Portfolio</h3>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {collaborator.portfolio.map((item: PortfolioItem, index: number) => {
-        const imageSrc = item.image && item.image.trim() !== '' 
-          ? item.image 
-          : '/placeholder-image.jpg'; // fallback placeholder
-
-        return (
-          <div
-            key={item.id ?? `${item.title}-${index}`}
-            className="group bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-2xl overflow-hidden hover:scale-[1.02] transition-all duration-300"
-          >
-            <div className="relative h-48">
-              <img
-                src={imageSrc}
-                alt={item.title || 'Portfolio item'}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-accent1/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <button className="w-10 h-10 bg-baby-powder rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
-                  <ExternalLink size={16} className="text-primary" />
-                </button>
+        <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1.3fr_0.7fr]">
+          <div className="space-y-6">
+            <div className="premium-card rounded-3xl p-4">
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { id: 'portfolio', label: 'Portfolio' },
+                  { id: 'about', label: 'About' },
+                  { id: 'reviews', label: 'Reviews' },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as ActiveTab)}
+                    className={`rounded-xl px-4 py-2 text-sm font-semibold uppercase tracking-[0.08em] transition-all duration-200 ${
+                      activeTab === tab.id
+                        ? 'bg-primary text-baby-powder'
+                        : 'text-text/70 hover:bg-primary/10 hover:text-primary'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
               </div>
             </div>
-            <div className="p-4">
-              <h4 className="font-semibold text-text mb-1">{item.title}</h4>
-              <p className="text-sm text-primary">{item.category}</p>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  </div>
-)}
 
-            {/* About Tab */}
-            {activeTab === 'about' && (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-2xl font-bold text-text mb-4">About Me</h3>
-                  <p className="text-text/70 leading-relaxed">{collaborator.skills}</p>
+            {activeTab === 'portfolio' && (
+              <article className="premium-card rounded-3xl p-6">
+                <h3 className="font-display text-3xl text-text">Portfolio</h3>
+                <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {collaborator.portfolio.length > 0 ? (
+                    collaborator.portfolio.map((item) => (
+                      <div key={item.id} className="group overflow-hidden rounded-2xl border border-primary/15 bg-baby-powder/85">
+                        <div className="relative h-48">
+                          <img
+                            src={item.image}
+                            alt={item.title}
+                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-text/50 via-transparent to-transparent" />
+                          {item.url && (
+                            <a
+                              href={item.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-baby-powder text-primary shadow"
+                            >
+                              <ExternalLink size={14} />
+                            </a>
+                          )}
+                        </div>
+                        <div className="p-3">
+                          <h4 className="text-base font-semibold text-text">{item.title}</h4>
+                          <p className="text-sm text-text/60">{item.category}</p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-text/65">No portfolio items available yet.</p>
+                  )}
                 </div>
+              </article>
+            )}
 
-                <div>
-                  <h4 className="text-lg font-semibold text-text mb-3">Skills & Expertise</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {collaborator.skills.map((skill: string, index: number) => (
+            {activeTab === 'about' && (
+              <article className="premium-card rounded-3xl p-6">
+                <h3 className="font-display text-3xl text-text">About</h3>
+                <p className="mt-4 text-base leading-relaxed text-text/72">{collaborator.bio}</p>
+
+                <div className="mt-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text/55">Skills and Expertise</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {collaborator.skills.map((skill, idx) => (
                       <span
-                        key={index}
-                        className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium"
+                        key={idx}
+                        className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-primary"
                       >
                         {skill}
                       </span>
@@ -384,80 +482,73 @@ if (!collaborator) {
                   </div>
                 </div>
 
-                <div>
-                  <h4 className="text-lg font-semibold text-text mb-3">Languages</h4>
-                  <div className="flex space-x-4">
-                    {languages.map((language: string, index: number) => (
+                <div className="mt-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text/55">Languages</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {languages.map((language) => (
                       <span
-                        key={index}
-                        className="px-3 py-1 bg-secondary/20 text-text rounded-lg text-sm"
+                        key={language}
+                        className="rounded-full border border-primary/15 bg-baby-powder/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-text/70"
                       >
                         {language}
                       </span>
                     ))}
                   </div>
                 </div>
-              </div>
+              </article>
             )}
 
-            {/* Reviews Tab */}
             {activeTab === 'reviews' && (
-              <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-text">Client Reviews</h3>
-                <div className="space-y-6">
-                  {staticReviews.map((review: Review) => (
-                    <div
-                      key={review.id}
-                      className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-2xl p-6"
-                    >
-                      <div className="flex items-start space-x-4">
+              <article className="premium-card rounded-3xl p-6">
+                <h3 className="font-display text-3xl text-text">Client Reviews</h3>
+                <div className="mt-5 space-y-4">
+                  {staticReviews.map((review) => (
+                    <div key={review.id} className="rounded-2xl border border-primary/15 bg-baby-powder/85 p-4">
+                      <div className="flex items-start gap-3">
                         <img
                           src={review.avatar}
                           alt={review.client}
-                          className="w-12 h-12 rounded-full object-cover"
+                          className="h-11 w-11 rounded-full object-cover"
                         />
                         <div className="flex-1">
-                          <div className="flex items-center justify-between mb-2">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
                             <div>
-                              <h5 className="font-semibold text-text">{review.client}</h5>
-                              <p className="text-sm text-text/60">{review.project} • {review.date}</p>
+                              <p className="text-sm font-semibold text-text">{review.client}</p>
+                              <p className="text-xs uppercase tracking-[0.08em] text-text/55">
+                                {review.project} | {review.date}
+                              </p>
                             </div>
-                            <div className="flex items-center space-x-1">
-                              {[...Array(review.rating)].map((_, i) => (
-                                <Star key={i} size={16} className="text-yellow-400" fill="currentColor" />
+                            <div className="flex items-center gap-1 text-amber-500">
+                              {Array.from({ length: review.rating }).map((_, idx) => (
+                                <Star key={idx} size={14} fill="currentColor" />
                               ))}
                             </div>
                           </div>
-                          <p className="text-text/70">{review.comment}</p>
+                          <p className="mt-2 text-sm text-text/72">{review.comment}</p>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
+              </article>
             )}
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Packages */}
-            <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-3xl p-6">
-              <h3 className="text-lg font-bold text-text mb-4">Service Packages</h3>
-              <div className="space-y-4">
-                {staticPackages.map((pkg : Package, index: number) => (
-                  <div
-                    key={index}
-                    className="border border-secondary/20 rounded-2xl p-4 hover:border-primary/30 transition-colors"
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-semibold text-text">{pkg.name}</h4>
-                      <span className="text-primary font-bold">{pkg.price}</span>
+          <aside className="space-y-6">
+            <article className="premium-card rounded-3xl p-5">
+              <h3 className="font-display text-2xl text-text">Packages</h3>
+              <div className="mt-4 space-y-3">
+                {staticPackages.map((pkg) => (
+                  <div key={pkg.name} className="rounded-2xl border border-primary/15 bg-baby-powder/85 p-4">
+                    <div className="mb-2 flex items-start justify-between gap-2">
+                      <h4 className="text-sm font-semibold text-text">{pkg.name}</h4>
+                      <span className="text-sm font-semibold text-primary">{pkg.price}</span>
                     </div>
-                    <p className="text-sm text-text/60 mb-3">{pkg.deliveryTime} delivery</p>
-                    <ul className="space-y-1">
-                      {pkg.features.map((feature: string, idx: number) => (
-                        <li key={idx} className="text-sm text-text/70 flex items-center space-x-2">
-                          <CheckCircle size={12} className="text-green-500" />
+                    <p className="text-xs uppercase tracking-[0.08em] text-text/55">{pkg.deliveryTime} delivery</p>
+                    <ul className="mt-3 space-y-1.5">
+                      {pkg.features.map((feature) => (
+                        <li key={feature} className="flex items-start gap-2 text-sm text-text/70">
+                          <CheckCircle2 size={13} className="mt-0.5 text-emerald-600" />
                           <span>{feature}</span>
                         </li>
                       ))}
@@ -465,112 +556,99 @@ if (!collaborator) {
                   </div>
                 ))}
               </div>
-            </div>
+            </article>
 
-            {/* Contact Info */}
-            <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-3xl p-6">
-              <h3 className="text-lg font-bold text-text mb-4">Quick Stats</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-text/70">Response Rate</span>
+            <article className="premium-card rounded-3xl p-5">
+              <h3 className="font-display text-2xl text-text">Quick Stats</h3>
+              <div className="mt-4 space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-text/65">Response Rate</span>
                   <span className="font-semibold text-text">100%</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-text/70">On-time Delivery</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-text/65">On-time Delivery</span>
                   <span className="font-semibold text-text">98%</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-text/70">Repeat Clients</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-text/65">Repeat Clients</span>
                   <span className="font-semibold text-text">85%</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-text/70">Average Rating</span>
-                  <span className="font-semibold text-text">{collaborator.rating}/5.0</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-text/65">Average Rating</span>
+                  <span className="font-semibold text-text">{collaborator.rating.toFixed(1)}/5.0</span>
                 </div>
               </div>
-            </div>
+            </article>
 
-            {/* Trust & Safety */}
-            <div className="bg-gradient-to-br from-primary/5 to-accent2/5 rounded-3xl p-6">
-              <h3 className="text-lg font-bold text-text mb-4">Trust & Safety</h3>
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="text-green-500" size={16} />
-                  <span className="text-sm text-text/70">Identity Verified</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="text-green-500" size={16} />
-                  <span className="text-sm text-text/70">Payment Protected</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="text-green-500" size={16} />
-                  <span className="text-sm text-text/70">Quality Guaranteed</span>
-                </div>
+            <article className="rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 to-accent2/10 p-5">
+              <h3 className="font-display text-2xl text-text">Trust and Safety</h3>
+              <div className="mt-4 space-y-2 text-sm text-text/72">
+                <p className="inline-flex items-center gap-2">
+                  <CheckCircle2 size={14} className="text-emerald-600" />
+                  Identity verified
+                </p>
+                <p className="inline-flex items-center gap-2">
+                  <CheckCircle2 size={14} className="text-emerald-600" />
+                  Protected payments
+                </p>
+                <p className="inline-flex items-center gap-2">
+                  <CheckCircle2 size={14} className="text-emerald-600" />
+                  Quality assurance standards
+                </p>
               </div>
-            </div>
-          </div>
-        </div>
+            </article>
+          </aside>
+        </section>
       </div>
 
-
-{showHireModal && (
-  <HireCollaboratorModal
-    collaborator={{
-      id: String(collaborator.userId), // 🔥 this must be a valid User.id
-      name: collaborator.name,
-      title: collaborator.title,
-      avatar: collaborator.avatar,
-      startingPrice: collaborator.startingPrice,
-    }}
-    role={userIsHiring ? "requester" : "receiver"} // ✅ API enum
-    onClose={() => setShowHireModal(false)}
-    onSubmit={async ({
-      id,
-      role,
-      projectTitle,
-      projectDescription,
-      budget,
-      deadline,
-      contactMethod,
-      additionalInfo,
-    }) => {
-      try {
-        const res = await fetch("/api/collaborations", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id, // ✅ collaborator User.id
-            role, // "requester" | "receiver"
+      {showHireModal && (
+        <HireCollaboratorModal
+          collaborator={{
+            id: collaborator.userId,
+            name: collaborator.name,
+            title: collaborator.title,
+            avatar: collaborator.avatar || collaborator.image,
+            startingPrice: collaborator.startingPrice,
+          }}
+          role={userIsHiring ? 'requester' : 'receiver'}
+          onClose={() => setShowHireModal(false)}
+          onSubmit={async ({
+            id,
+            role,
             projectTitle,
             projectDescription,
             budget,
-            deadline, // ISO or null
+            deadline,
             contactMethod,
-            additionalInfo: additionalInfo?.trim() || null,
-          }),
-        });
+            additionalInfo,
+          }) => {
+            try {
+              const res = await fetch('/api/collaborations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  id,
+                  role,
+                  projectTitle,
+                  projectDescription,
+                  budget,
+                  deadline,
+                  contactMethod,
+                  additionalInfo: additionalInfo?.trim() || null,
+                }),
+              });
 
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err?.error || "Failed to create collaboration");
-        }
-
-        alert("Collaboration request sent successfully!");
-        setShowHireModal(false);
-      } catch (error) {
-        console.error("Error creating collaboration:", error);
-        alert(
-          error instanceof Error
-            ? error.message
-            : "Failed to send request. Please try again."
-        );
-      }
-    }}
-  />
-)}
-
-
-
+              if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err?.error || 'Failed to create collaboration');
+              }
+            } catch (err: unknown) {
+              console.error('Error creating collaboration:', err);
+              alert(err instanceof Error ? err.message : 'Failed to send request. Please try again.');
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

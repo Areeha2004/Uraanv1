@@ -1,18 +1,23 @@
-"use client"
-import { ensureProtocol } from "@/utils/ensureProtocol";
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import {
   ArrowLeft,
-  CheckCircle,
+  ArrowRight,
+  CheckCircle2,
   Clock,
   DollarSign,
-  Star,
-  Users,
   Download,
   Play,
-} from "lucide-react";
+  Sparkles,
+  Star,
+  Target,
+  Users,
+} from 'lucide-react';
+
+import { ensureProtocol } from '@/utils/ensureProtocol';
 
 type Progress = { status: string };
 
@@ -38,14 +43,13 @@ interface RoadmapDataType {
   steps?: StepType[];
 }
 
-// Shape we might receive from API (id vs stepId difference)
-type ReceivedStep = Omit<StepType, "stepId" | "userProgress"> & {
+type ReceivedStep = Omit<StepType, 'stepId' | 'userProgress'> & {
   id?: string;
   stepId?: string;
   userProgress?: Progress[];
 };
 
-type ServerRoadmap = Omit<RoadmapDataType, "steps"> & {
+type ServerRoadmap = Omit<RoadmapDataType, 'steps'> & {
   steps?: ReceivedStep[];
 };
 
@@ -55,44 +59,108 @@ export default function RoadmapPage() {
   const [roadmap, setRoadmap] = useState<RoadmapDataType | null>(null);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
 
- useEffect(() => {
-    
+  useEffect(() => {
+    if (!roadmapId) return;
 
-  if (!roadmapId) return;
-console.log("Fetching roadmap for ID:", roadmapId);
+    const fetchRoadmap = async () => {
+      try {
+        const res = await fetch(`/api/user/roadmaps/${roadmapId}`, {
+          credentials: 'include',
+          cache: 'no-store',
+        });
 
-  const fetchRoadmap = async () => {
+        if (!res.ok) {
+          const text = await res.text();
+          console.error('Roadmap fetch failed:', res.status, text);
+          return;
+        }
+
+        const data = (await res.json()) as ServerRoadmap;
+        const normalizedSteps: StepType[] = (data.steps ?? []).map((step, idx) => ({
+          stepId: step.stepId ?? step.id ?? `step-${idx}`,
+          stepTitle: step.stepTitle,
+          description: step.description,
+          duration: step.duration,
+          tasks: Array.isArray(step.tasks) ? step.tasks : [],
+          downloadables: Array.isArray(step.downloadables) ? step.downloadables : [],
+          videoTutorial: step.videoTutorial ?? null,
+          userProgress: step.userProgress ?? [],
+        }));
+
+        const normalizedRoadmap: RoadmapDataType = {
+          title: data.title,
+          description: data.description,
+          image: data.image,
+          timeline: data.timeline,
+          investment: data.investment,
+          difficulty: data.difficulty,
+          successRate: data.successRate,
+          steps: normalizedSteps,
+        };
+
+        setRoadmap(normalizedRoadmap);
+
+        const doneIndexes = normalizedSteps.reduce<number[]>((acc, step, idx) => {
+          if (step.userProgress[0]?.status === 'done') acc.push(idx);
+          return acc;
+        }, []);
+        setCompletedSteps(doneIndexes);
+      } catch (err) {
+        console.error('Error loading roadmap:', err);
+      }
+    };
+
+    fetchRoadmap();
+  }, [roadmapId]);
+
+  const toggleStep = async (idx: number, stepId: string): Promise<void> => {
+    const newStatus = completedSteps.includes(idx) ? 'pending' : 'done';
+
+    setCompletedSteps((prev) =>
+      newStatus === 'done' ? [...prev, idx] : prev.filter((i) => i !== idx),
+    );
+
     try {
-      const res = await fetch(`/api/user/roadmaps/${roadmapId}`, {
-        credentials: "include",
-        cache: "no-store",
+      const res = await fetch('/api/user/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ stepId, status: newStatus }),
       });
 
-      if (!res.ok) {
-        const text = await res.text();
-        console.error("Roadmap fetch failed:", res.status, text);
-        return;
-      }
+      if (!res.ok) throw new Error('Progress update failed');
 
-      const data = (await res.json()) as RoadmapDataType;
-      setRoadmap(data);
-
-      const doneIndexes = (data.steps ?? []).reduce<number[]>((acc, step, idx) => {
-        if (step.userProgress?.[0]?.status === "done") acc.push(idx);
-        return acc;
-      }, []);
-      setCompletedSteps(doneIndexes);
+      setRoadmap((old) =>
+        old
+          ? {
+              ...old,
+              steps: old.steps?.map((step, i) =>
+                i === idx ? { ...step, userProgress: [{ status: newStatus }] } : step,
+              ),
+            }
+          : old,
+      );
     } catch (err) {
-      console.error("Error loading roadmap:", err);
+      console.error('Failed to update progress:', err);
+      setCompletedSteps((prev) =>
+        newStatus === 'done' ? prev.filter((i) => i !== idx) : [...prev, idx],
+      );
     }
   };
 
-  fetchRoadmap();
-}, [roadmapId]);
-
-
   if (!roadmap) {
-    return <div className="p-8 text-center">Loading roadmap…</div>;
+    return (
+      <div className="relative isolate min-h-screen overflow-hidden px-4 pb-10 pt-10 sm:px-6 lg:px-8">
+        <div className="aurora-bg absolute inset-0" />
+        <div className="luxury-grid absolute inset-0 opacity-[0.18]" />
+        <div className="relative mx-auto max-w-3xl">
+          <div className="premium-card rounded-3xl p-10 text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Loading roadmap</p>
+            <h2 className="font-display mt-3 text-4xl text-text">Preparing your execution blueprint</h2>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const {
@@ -106,334 +174,232 @@ console.log("Fetching roadmap for ID:", roadmapId);
     steps = [],
   } = roadmap;
 
-  const toggleStep = async (idx: number, stepId: string): Promise<void> => {
-    const newStatus = completedSteps.includes(idx) ? "pending" : "done";
-
-    setCompletedSteps((prev) =>
-      newStatus === "done" ? [...prev, idx] : prev.filter((i) => i !== idx)
-    );
-
-    try {
-      const res = await fetch("/api/user/progress", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ stepId, status: newStatus }),
-      });
-
-      if (!res.ok) throw new Error("Progress update failed");
-
-      setRoadmap((old) =>
-        old
-          ? {
-              ...old,
-              steps: old.steps?.map((s, i) =>
-                i === idx
-                  ? { ...s, userProgress: [{ status: newStatus }] }
-                  : s
-              ),
-            }
-          : old
-      );
-    } catch (err) {
-      console.error("Failed to update progress:", err);
-      setCompletedSteps((prev) =>
-        newStatus === "done" ? prev.filter((i) => i !== idx) : [...prev, idx]
-      );
-    }
-  };
-
   const completionPercentage = steps.length
     ? Math.round((completedSteps.length / steps.length) * 100)
     : 0;
 
   return (
-    <div className="min-h-screen pt-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto py-12">
-        {/* Back Button */}
+    <div className="relative isolate min-h-screen overflow-hidden px-4 pb-10 pt-8 sm:px-6 lg:px-8">
+      <div className="aurora-bg absolute inset-0" />
+      <div className="luxury-grid absolute inset-0 opacity-[0.18]" />
+      <div className="pointer-events-none absolute -left-24 top-24 h-80 w-80 rounded-full bg-primary/20 blur-3xl animate-float-gentle" />
+      <div className="pointer-events-none absolute -right-24 top-32 h-96 w-96 rounded-full bg-accent2/20 blur-3xl animate-float-delayed" />
+
+      <div className="relative mx-auto max-w-7xl">
         <Link
-          href="/results"
-          className="inline-flex items-center space-x-2 text-text/70 hover:text-primary transition-colors mb-8"
+          href="/ResultsPage"
+          className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-baby-powder/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.1em] text-primary transition-colors hover:border-primary/35"
         >
-          <ArrowLeft size={20} />
-          <span>Back to Results</span>
+          <ArrowLeft size={14} />
+          Back to Results
         </Link>
 
-        {/* Header */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-          {/* Content */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="space-y-4">
-              <h1 className="text-3xl md:text-4xl font-bold text-text">
-                <span className="text-primary text-bold"> {title}</span>
-              </h1>
-              <p className="text-lg text-text/70 text-bold leading-relaxed">
-                {description}
-              </p>
-            </div>
+        <section className="premium-card mt-5 overflow-hidden rounded-[2rem] p-6 sm:p-8">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Execution Blueprint</p>
+              <h1 className="font-display mt-2 text-4xl leading-tight text-text sm:text-5xl">{title}</h1>
+              <p className="mt-4 max-w-3xl text-primary leading-relaxed text-text/72 sm:text-lg">{description}</p>
 
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[ 
-                { icon: <Clock className="w-8 h-8 text-primary mx-auto mb-2"/>, label:"Timeline", value: timeline },
-                { icon: <DollarSign className="w-8 h-8 text-primary mx-auto mb-2"/>, label:"Investment", value: investment },
-                { icon: <Users className="w-8 h-8 text-primary mx-auto mb-2"/>, label:"Difficulty", value: difficulty },
-                { icon: <Star className="w-8 h-8 text-primary mx-auto mb-2"/>, label:"Success Rate", value: successRate }
-              ].map((stat, i) => (
-                <div
-                  key={i}
-                  className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-2xl p-4 text-center"
-                >
-                  {stat.icon}
-                  <p className="text-xs text-text/60">{stat.label}</p>
-                  <p className="font-semibold text-text">{stat.value}</p>
+              <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div className="rounded-2xl border border-primary/15 bg-baby-powder/85 p-3 text-center">
+                  <Clock className="mx-auto text-primary" size={18} />
+                  <p className="mt-1 text-[11px] uppercase tracking-[0.1em] text-text/55">Timeline</p>
+                  <p className="mt-0.5 text-sm font-semibold text-text">{timeline}</p>
                 </div>
-              ))}
+                <div className="rounded-2xl border border-primary/15 bg-baby-powder/85 p-3 text-center">
+                  <DollarSign className="mx-auto text-primary" size={18} />
+                  <p className="mt-1 text-[11px] uppercase tracking-[0.1em] text-text/55">Investment</p>
+                  <p className="mt-0.5 text-sm font-semibold text-text">{investment}</p>
+                </div>
+                <div className="rounded-2xl border border-primary/15 bg-baby-powder/85 p-3 text-center">
+                  <Users className="mx-auto text-primary" size={18} />
+                  <p className="mt-1 text-[11px] uppercase tracking-[0.1em] text-text/55">Difficulty</p>
+                  <p className="mt-0.5 text-sm font-semibold text-text">{difficulty}</p>
+                </div>
+                <div className="rounded-2xl border border-primary/15 bg-baby-powder/85 p-3 text-center">
+                  <Star className="mx-auto text-primary" size={18} />
+                  <p className="mt-1 text-[11px] uppercase tracking-[0.1em] text-text/55">Success</p>
+                  <p className="mt-0.5 text-sm font-semibold text-text">{successRate}</p>
+                </div>
+              </div>
             </div>
-          </div>
 
-          {/* Image */}
-          <div className="relative">
-            <div className="aspect-square rounded-3xl overflow-hidden shadow-2xl">
+            <div className="relative overflow-hidden rounded-[1.8rem] border border-primary/15">
               <img
-                src={image||"https://images.prismic.io/justremote/c0bba365-3ac6-4071-9834-32e374da043a_work-from-home.jpeg?auto=compress,format"}
+                src={
+                  image ||
+                  'https://images.prismic.io/justremote/c0bba365-3ac6-4071-9834-32e374da043a_work-from-home.jpeg?auto=compress,format'
+                }
                 alt={title}
-                className="w-full h-full object-cover"
+                className="h-full w-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-accent1/40 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-text/45 via-transparent to-transparent" />
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Progress */}
-        <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-3xl p-6 mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-bold text-text">Your Progress</h3>
-            <span className="text-primary font-semibold">
-              {completionPercentage}% Complete
+        <section className="mt-6 premium-card rounded-3xl p-6">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-display text-2xl text-text">Your completion progress</h2>
+            <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.1em] text-primary">
+              {completionPercentage}% complete
             </span>
           </div>
-          <div className="w-full bg-secondary/20 rounded-full h-3">
+          <div className="h-2 rounded-full bg-secondary/25">
             <div
-              className="bg-gradient-to-r from-primary to-primary-light h-full rounded-full transition-all duration-500"
+              className="h-full rounded-full bg-gradient-to-r from-primary to-accent2 transition-all duration-700"
               style={{ width: `${completionPercentage}%` }}
             />
           </div>
-          <p className="text-sm text-text/60 mt-2">
-            {completedSteps.length} of {steps.length} steps completed
+          <p className="mt-2 text-sm text-text/65">
+            {completedSteps.length} of {steps.length} roadmap steps are completed.
           </p>
-        </div>
+        </section>
 
-        {/* Roadmap Steps */}
-        <div className="space-y-8">
-         {steps.map((step, index) => {
-          const isCompleted = completedSteps.includes(index);
+        <section className="mt-7 space-y-5">
+          {steps.map((step, index) => {
+            const isCompleted = completedSteps.includes(index);
             const tasks = Array.isArray(step.tasks) ? step.tasks : [];
-             const files = Array.isArray(step.downloadables)
-    ? step.downloadables
-    : [];
-  const videoUrl = step.videoTutorial ?? "";
+            const files = Array.isArray(step.downloadables) ? step.downloadables : [];
+            const videoUrl = step.videoTutorial ?? '';
 
             return (
-              <div
-                key={index}
-                className={`relative ${
-                  index % 2 === 0 ? "" : "lg:flex-row-reverse"
-                }`}
-              >
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                  {/* Step Content */}
-                  <div
-                    className={`lg:col-span-2 ${
-                      index % 2 === 1 ? "lg:order-2" : ""
-                    }`}
-                  >
+              <article key={step.stepId} className="premium-card rounded-3xl p-5 sm:p-6">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="flex items-start gap-3">
                     <div
-                      className={`bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-3xl p-8 transition-all duration-300 ${
-                        isCompleted ? "border-primary/50 bg-primary/5" : ""
+                      className={`inline-flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold ${
+                        isCompleted ? 'bg-primary text-baby-powder' : 'bg-primary/12 text-primary'
                       }`}
                     >
-                      {/* Header */}
-                      <div className="flex items-start justify-between mb-6">
-                        <div className="flex items-start space-x-4">
-                          <div
-                            className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg ${
-                              isCompleted
-                                ? "bg-primary text-baby-powder"
-                                : "bg-secondary/20 text-text"
-                            }`}
-                          >
-                            {isCompleted ? (
-                              <CheckCircle size={24} />
-                            ) : (
-                              index + 1
-                            )}
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-bold text-text mb-2">
-                              {step.stepTitle}
-                            </h3>
-                            <p className="text-text/70 mb-2">
-                              {step.description}
-                            </p>
-                            
-                            <div className="flex items-center space-x-2 text-sm text-primary">
-                              <Clock size={16} />
-                              <span>{step.duration}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <button
-                onClick={() => toggleStep(index, step.stepId)}
-                className={`mt-2 px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
-                  isCompleted
-                    ? "bg-primary text-baby-powder"
-                    : "bg-secondary/20 text-text hover:bg-primary hover:text-baby-powder"
-                }`}
-              >
-                {isCompleted ? "Completed" : "Mark Done"}
-              </button>
+                      {isCompleted ? <CheckCircle2 size={18} /> : index + 1}
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text/55">
+                        Step {index + 1}
+                      </p>
+                      <h3 className="text-xl font-semibold text-text">{step.stepTitle}</h3>
+                      <p className="mt-1 text-sm leading-relaxed text-text/70">{step.description}</p>
+                      <div className="mt-2 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.08em] text-primary">
+                        <Clock size={13} />
+                        {step.duration}
                       </div>
-
-                      {/* Tasks */}
-                      <div className="mb-6">
-                        <h4 className="font-semibold text-text mb-3">Tasks:</h4>
-                        <ul className="space-y-2">
-                          {tasks.map((t, i) => (
-                            <li
-                              key={i}
-                              className="flex items-start space-x-3 text-text/70"
-                            >
-                              <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
-                              <span>{t}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* Downloads & Video */}
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        {/* Downloads */}
-        <div>
-          <h4 className="font-semibold text-text mb-3">Downloads:</h4>
-
-          {files.length > 0 ? (
-            <div className="space-y-2">
-              {files.map((raw, i) => {
-                const url = ensureProtocol(raw);
-                // get last segment as label, or fall back to full URL
-                const label = url.split("/").pop() || url;
-
-                return (
-                  <a
-                    key={i}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center space-x-2 w-full p-3 bg-baby-powder/50 hover:bg-baby-powder rounded-xl transition-colors"
-                  >
-                    <Download size={16} className="text-primary" />
-                    <span className="text-sm text-text break-all">
-                      {label}
-                    </span>
-                  </a>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="text-sm text-gray-500">
-              No downloads available.
-            </p>
-          )}
-        </div>
-
-        {/* Video Tutorial */}
-        <div>
-          <h4 className="font-semibold text-text mb-3">
-            Video Tutorial:
-          </h4>
-
-          {videoUrl ? (
-            (() => {
-              const url = ensureProtocol(videoUrl);
-              // use hostname (e.g. "youtube.com") as link text
-              const host = new URL(url).hostname.replace(/^www\./, "");
-
-              return (
-                <a
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center space-x-2 w-full p-3 bg-primary/10 hover:bg-primary/20 rounded-xl transition-colors"
-                >
-                  <Play size={16} className="text-primary" />
-                  <span className="text-sm text-primary break-all">
-                    {host}
-                  </span>
-                </a>
-              );
-            })()
-          ) : (
-            <p className="text-sm text-gray-500">
-              No video tutorial available.
-            </p>
-          )}
-        </div>
-      </div>
                     </div>
                   </div>
 
-                  {/* Step Image */}
-                  <div
-                    className={`relative ${
-                      index % 2 === 1 ? "lg:order-1" : ""
+                  <button
+                    onClick={() => toggleStep(index, step.stepId)}
+                    className={`rounded-xl px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] transition-all duration-200 ${
+                      isCompleted
+                        ? 'bg-primary text-baby-powder'
+                        : 'border border-primary/20 bg-baby-powder/90 text-primary hover:border-primary/35'
                     }`}
                   >
-                    <div className="aspect-w-4 aspect-h-3 rounded-2xl overflow-hidden">
-                      <img
-                        src={`https://images.pexels.com/photos/${
-                          3184292 + index
-                        }/pexels-photo-${3184292 + index}.jpeg`}
-                        alt={step.stepTitle}
-                        className="w-full h-64 object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-accent1/30 to-transparent" />
+                    {isCompleted ? 'Completed' : 'Mark Done'}
+                  </button>
+                </div>
+
+                <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text/58">Action tasks</p>
+                    <ul className="mt-3 space-y-2">
+                      {tasks.length > 0 ? (
+                        tasks.map((task, idx) => (
+                          <li key={idx} className="flex items-start gap-2 rounded-xl border border-primary/10 bg-baby-powder/85 px-3 py-2 text-sm text-text/72">
+                            <Target size={14} className="mt-0.5 text-primary" />
+                            <span>{task}</span>
+                          </li>
+                        ))
+                      ) : (
+                        <li className="rounded-xl border border-primary/10 bg-baby-powder/85 px-3 py-2 text-sm text-text/60">
+                          No specific tasks listed for this step.
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="rounded-2xl border border-primary/15 bg-baby-powder/85 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text/58">Downloads</p>
+                      <div className="mt-3 space-y-2">
+                        {files.length > 0 ? (
+                          files.map((raw, idx) => {
+                            const url = ensureProtocol(raw);
+                            const label = url.split('/').pop() || url;
+                            return (
+                              <a
+                                key={idx}
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 rounded-xl border border-primary/12 bg-baby-powder/95 px-3 py-2 text-sm text-text/72 transition-colors hover:border-primary/30"
+                              >
+                                <Download size={14} className="text-primary" />
+                                <span className="break-all">{label}</span>
+                              </a>
+                            );
+                          })
+                        ) : (
+                          <p className="text-sm text-text/55">No downloadable files for this step.</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-primary/15 bg-baby-powder/85 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text/58">Video tutorial</p>
+                      <div className="mt-3">
+                        {videoUrl ? (
+                          <a
+                            href={ensureProtocol(videoUrl)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 rounded-xl bg-primary/10 px-3 py-2 text-sm font-medium text-primary"
+                          >
+                            <Play size={14} />
+                            Open tutorial
+                          </a>
+                        ) : (
+                          <p className="text-sm text-text/55">No tutorial link available.</p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                {/* Connector Line */}
-                {index < steps.length - 1 && (
-                  <div className="hidden lg:block absolute left-1/2 top-full w-0.5 h-8 bg-gradient-to-b from-primary/50 to-transparent transform -translate-x-px" />
-                )}
-              </div>
+              </article>
             );
           })}
-        </div>
-          <div className="mt-16 text-center">
-          <div className="bg-gradient-to-br from-primary/5 to-accent2/5 rounded-3xl p-8">
-            <h3 className="text-2xl font-bold text-text mb-4">Ready to Launch Your Business?</h3>
-            <p className="text-text/70 mb-6 max-w-2xl mx-auto">
-              Complete all steps and join our community of successful women entrepreneurs. 
-              We&apos;re here to support you every step of the way!
+        </section>
+
+        <section className="mt-12 rounded-[2rem] border border-primary/20 bg-gradient-to-br from-primary/10 to-accent2/10 p-6 text-center sm:p-8">
+          <div className="mx-auto max-w-3xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Launch support</p>
+            <h3 className="font-display mt-2 text-3xl text-text sm:text-4xl">Ready to launch with confidence?</h3>
+            <p className="mt-3 text-primary leading-relaxed text-text/72">
+              Finish each step and use community + dashboard support to keep your momentum high.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
               <Link
                 href="/CommunityPage"
-                className="inline-flex items-center space-x-2 bg-gradient-to-r from-primary to-primary-light text-baby-powder px-6 py-3 rounded-xl font-semibold hover:shadow-lg hover:shadow-result-cta-shadow transition-all duration-300"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-primary-light px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-baby-powder"
               >
-                <Users size={20} />
-                <span>Join Community</span>
+                <Users size={15} />
+                Join Community
               </Link>
               <Link
                 href="/DashboardPage"
-                className="inline-flex items-center space-x-2 bg-glass-bg backdrop-blur-sm border border-secondary/30 text-text px-6 py-3 rounded-xl font-semibold hover:bg-secondary/20 transition-all duration-300"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-primary/25 bg-baby-powder/90 px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-primary"
               >
-                <span>Go to Dashboard</span>
+                Go to Dashboard
+                <ArrowRight size={14} />
               </Link>
             </div>
+            <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-primary">
+              <Sparkles size={13} />
+              Keep consistent execution daily
+            </div>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   );

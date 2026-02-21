@@ -1,23 +1,22 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Link from "next/link";
-import Image from "next/image"; // ⭐ added
-import { useRouter } from "next/navigation";
+import React, { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
+  AlertCircle,
   ArrowLeft,
-  Upload,
-  X,
-  Plus,
-  MapPin,
+  Briefcase,
+  CheckCircle,
   Clock,
   DollarSign,
-  User,
-  Briefcase,
+  MapPin,
+  Plus,
   Star,
-  CheckCircle,
-  AlertCircle,
-} from "lucide-react";
+  Upload,
+  User,
+  X,
+} from 'lucide-react';
 
 interface FormData {
   title: string;
@@ -40,47 +39,59 @@ const BecomeCollaboratorPage: React.FC = () => {
   const router = useRouter();
 
   const [formData, setFormData] = useState<FormData>({
-    title: "",
+    title: '',
     skills: [],
     portfolio: [],
-    startingPrice: "",
-    responseTime: "",
-    location: "",
-    avatar: "",
+    startingPrice: '',
+    responseTime: '',
+    location: '',
+    avatar: '',
   });
 
-  const [newSkill, setNewSkill] = useState("");
+  const [newSkill, setNewSkill] = useState('');
   const [newPortfolio, setNewPortfolio] = useState<PortfolioItem>({
-    title: "",
-    serviceType: "",
-    url: "",
-    image: "",
+    title: '',
+    serviceType: '',
+    url: '',
+    image: '',
   });
 
   const [portfolioImageFile, setPortfolioImageFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState('');
+
+  useEffect(() => {
+    if (!avatarFile) {
+      setAvatarPreview(formData.avatar);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(avatarFile);
+    setAvatarPreview(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [avatarFile, formData.avatar]);
 
   const uploadAvatar = async (file: File): Promise<string> => {
     const form = new FormData();
-    form.append("file", file);
-    const res = await fetch("/api/upload-avatar", { method: "POST", body: form });
+    form.append('file', file);
+    const res = await fetch('/api/upload-avatar', { method: 'POST', body: form });
     const data = await res.json();
     return data.url;
   };
 
   const uploadPortfolioImage = async (file: File): Promise<string> => {
     const form = new FormData();
-    form.append("file", file);
-    const res = await fetch("/api/upload-portfolio", { method: "POST", body: form });
+    form.append('file', file);
+    const res = await fetch('/api/upload-portfolio', { method: 'POST', body: form });
     const data = await res.json();
     return data.url;
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -89,7 +100,7 @@ const BecomeCollaboratorPage: React.FC = () => {
     }));
 
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
+      setErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
 
@@ -100,8 +111,8 @@ const BecomeCollaboratorPage: React.FC = () => {
         ...prev,
         skills: [...prev.skills, skill],
       }));
-      setNewSkill("");
-      setErrors((prev) => ({ ...prev, skills: "" }));
+      setNewSkill('');
+      setErrors((prev) => ({ ...prev, skills: '' }));
     }
   };
 
@@ -127,7 +138,7 @@ const BecomeCollaboratorPage: React.FC = () => {
       portfolio: [...prev.portfolio, { ...newPortfolio, image: imageUrl }],
     }));
 
-    setNewPortfolio({ title: "", serviceType: "", url: "", image: "" });
+    setNewPortfolio({ title: '', serviceType: '', url: '', image: '' });
     setPortfolioImageFile(null);
   };
 
@@ -141,22 +152,22 @@ const BecomeCollaboratorPage: React.FC = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.title.trim()) newErrors.title = "Professional title is required";
-    if (formData.skills.length === 0) newErrors.skills = "At least one skill is required";
-    if (!formData.startingPrice.trim()) newErrors.startingPrice = "Starting price is required";
-    if (!formData.responseTime.trim()) newErrors.responseTime = "Response time is required";
-    if (!formData.location.trim()) newErrors.location = "Location is required";
+    if (!formData.title.trim()) newErrors.title = 'Professional title is required';
+    if (formData.skills.length === 0) newErrors.skills = 'At least one skill is required';
+    if (!formData.startingPrice.trim()) newErrors.startingPrice = 'Starting price is required';
+    if (!formData.responseTime.trim()) newErrors.responseTime = 'Response time is required';
+    if (!formData.location.trim()) newErrors.location = 'Location is required';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setAvatarFile(file);
 
     if (file && errors.avatar) {
-      setErrors((prev) => ({ ...prev, avatar: "" }));
+      setErrors((prev) => ({ ...prev, avatar: '' }));
     }
   };
 
@@ -165,7 +176,7 @@ const BecomeCollaboratorPage: React.FC = () => {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
-    setSubmitStatus("idle");
+    setSubmitStatus('idle');
 
     try {
       let avatarUrl = formData.avatar;
@@ -175,23 +186,23 @@ const BecomeCollaboratorPage: React.FC = () => {
 
       const payload = { ...formData, avatar: avatarUrl };
 
-      const res = await fetch("/api/collaborators", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/collaborators', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.error || "Failed to create collaborator");
+        throw new Error(err.error || 'Failed to create collaborator');
       }
 
-      setSubmitStatus("success");
-      router.push("/CollaborationPage");
+      setSubmitStatus('success');
+      router.push('/CollaborationPage');
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Something went wrong";
-      console.error("Submission error:", message);
-      setSubmitStatus("error");
+      const message = err instanceof Error ? err.message : 'Something went wrong';
+      console.error('Submission error:', message);
+      setSubmitStatus('error');
       setErrors((prev) => ({ ...prev, form: message }));
     } finally {
       setIsSubmitting(false);
@@ -199,256 +210,225 @@ const BecomeCollaboratorPage: React.FC = () => {
   };
 
   const suggestedSkills = [
-    "Graphic Design",
-    "Web Development",
-    "Content Writing",
-    "Social Media Marketing",
-    "Photography",
-    "Video Editing",
-    "UI/UX Design",
-    "Digital Marketing",
-    "Copywriting",
-    "Brand Design",
-    "WordPress",
-    "E-commerce",
+    'Graphic Design',
+    'Web Development',
+    'Content Writing',
+    'Social Media Marketing',
+    'Photography',
+    'Video Editing',
+    'UI/UX Design',
+    'Digital Marketing',
+    'Copywriting',
+    'Brand Design',
+    'WordPress',
+    'E-commerce',
   ];
 
   const responseTimeOptions = [
-    "Within 1 hour",
-    "Within 2–4 hours",
-    "Within 24 hours",
-    "Within 2–3 days",
-    "Within a week",
+    'Within 1 hour',
+    'Within 2-4 hours',
+    'Within 24 hours',
+    'Within 2-3 days',
+    'Within a week',
   ];
 
   const locationOptions = [
-    "Karachi",
-    "Lahore",
-    "Islamabad",
-    "Faisalabad",
-    "Rawalpindi",
-    "Multan",
-    "Peshawar",
-    "Quetta",
-    "Sialkot",
-    "Remote Only",
+    'Karachi',
+    'Lahore',
+    'Islamabad',
+    'Faisalabad',
+    'Rawalpindi',
+    'Multan',
+    'Peshawar',
+    'Quetta',
+    'Sialkot',
+    'Remote Only',
   ];
 
+  const inputClass =
+    'w-full rounded-xl border border-primary/20 bg-baby-powder/90 px-4 py-3 text-sm text-text placeholder:text-text/45 focus:border-primary/45 focus:outline-none focus:ring-2 focus:ring-primary/20';
+  const avatarInitial = formData.title?.trim()?.[0]?.toUpperCase() || 'U';
+  const completionScore = useMemo(() => {
+    const checks = [
+      !!formData.title.trim(),
+      formData.skills.length > 0,
+      !!formData.startingPrice.trim(),
+      !!formData.responseTime.trim(),
+      !!formData.location.trim(),
+    ];
+    const completed = checks.filter(Boolean).length;
+    return Math.round((completed / checks.length) * 100);
+  }, [formData.title, formData.skills.length, formData.startingPrice, formData.responseTime, formData.location]);
+
   return (
-    <div className="min-h-screen pt-16 px-4 sm:px-6 lg:px-8">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-base via-baby-powder to-secondary/20"></div>
+    <div className="relative isolate min-h-screen overflow-hidden px-4 pb-12 pt-8 sm:px-6 lg:px-8">
+      <div className="aurora-bg absolute inset-0" />
+      <div className="luxury-grid absolute inset-0 opacity-[0.16]" />
+      <div className="pointer-events-none absolute -left-24 top-24 h-80 w-80 rounded-full bg-primary/20 blur-3xl animate-float-gentle" />
+      <div className="pointer-events-none absolute -right-24 top-36 h-96 w-96 rounded-full bg-accent2/20 blur-3xl animate-float-delayed" />
 
-      <div className="absolute top-20 left-10 w-64 h-64 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-br from-accent2/10 to-primary/10 rounded-full blur-3xl"></div>
+      <div className="relative mx-auto max-w-6xl">
+        <Link
+          href="/CollaborationPage"
+          className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-baby-powder/85 px-4 py-2 text-xs font-semibold uppercase tracking-[0.1em] text-primary transition-colors hover:border-primary/35"
+        >
+          <ArrowLeft size={14} />
+          Back to Collaboration
+        </Link>
 
-      <div className="relative max-w-4xl mx-auto py-12">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <Link
-            href="/CollaborationPage"
-            className="inline-flex items-center space-x-2 text-text/70 hover:text-primary transition-colors mb-8"
-          >
-            <ArrowLeft size={20} />
-            <span>Back to Collaboration</span>
-          </Link>
-
-          <div className="space-y-6">
-            <div className="inline-flex items-center space-x-2 bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-full px-6 py-3">
-              <Star className="text-primary" size={20} />
-              <span className="text-primary font-medium">Join Our Expert Network</span>
-            </div>
-
-            <h1 className="text-4xl md:text-5xl font-bold text-text mb-4">
-              Become a <span className="bg-gradient-to-r from-primary to-accent1 bg-clip-text text-transparent">Collaborator</span>
+        <section className="premium-card mt-5 rounded-[2rem] border border-primary/20 p-6 sm:p-8">
+          <div className="text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Join the collaborator network</p>
+            <h1 className="font-display mt-3 text-4xl leading-tight text-text sm:text-5xl">
+              Build a premium collaborator profile
             </h1>
-
-            <p className="text-lg text-text/70 max-w-2xl mx-auto leading-relaxed">
-              Share your expertise with Pakistani women entrepreneurs and help them build successful businesses while growing your own freelance career.
+            <p className="mx-auto mt-3 max-w-3xl text-base leading-relaxed text-text/72 sm:text-lg">
+              Showcase your expertise, set your rates, and start receiving high-intent collaboration requests.
             </p>
-
-            {/* Benefits */}
-            ...
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-              <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-2xl p-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-light rounded-xl flex items-center justify-center mx-auto mb-2">
-                  <DollarSign size={20} className="text-baby-powder" />
-                </div>
-                <h3 className="font-semibold text-text text-sm">Earn More</h3>
-                <p className="text-xs text-text/60">Set your own rates</p>
-              </div>
-
-              <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-2xl p-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-accent2 to-accent2-light rounded-xl flex items-center justify-center mx-auto mb-2">
-                  <Clock size={20} className="text-baby-powder" />
-                </div>
-                <h3 className="font-semibold text-text text-sm">Work Flexibly</h3>
-                <p className="text-xs text-text/60">Choose your schedule</p>
-              </div>
-
-              <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-2xl p-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-secondary to-primary-light rounded-xl flex items-center justify-center mx-auto mb-2">
-                  <User size={20} className="text-baby-powder" />
-                </div>
-                <h3 className="font-semibold text-text text-sm">Make Impact</h3>
-                <p className="text-xs text-text/60">Empower women</p>
-              </div>
-            </div>
           </div>
-        </div>
 
-        {/* Success Message */}
-        {submitStatus === "success" && (
-          <div className="mb-8 p-6 bg-green-100 border border-green-300 rounded-3xl">
-            <div className="flex items-center space-x-3">
-              <CheckCircle className="text-green-600" size={24} />
+          <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-3">
+            <article className="rounded-2xl border border-primary/15 bg-baby-powder/90 p-4 text-center">
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-primary/12 text-primary">
+                <DollarSign size={18} />
+              </div>
+              <p className="mt-2 text-sm font-semibold text-text">Set your rates</p>
+              <p className="text-xs text-text/60">Flexible pricing and scope</p>
+            </article>
+            <article className="rounded-2xl border border-primary/15 bg-baby-powder/90 p-4 text-center">
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-primary/12 text-primary">
+                <Clock size={18} />
+              </div>
+              <p className="mt-2 text-sm font-semibold text-text">Control your schedule</p>
+              <p className="text-xs text-text/60">Choose projects that match</p>
+            </article>
+            <article className="rounded-2xl border border-primary/15 bg-baby-powder/90 p-4 text-center">
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-primary/12 text-primary">
+                <Star size={18} />
+              </div>
+              <p className="mt-2 text-sm font-semibold text-text">Grow reputation</p>
+              <p className="text-xs text-text/60">Attract better opportunities</p>
+            </article>
+          </div>
+        </section>
+
+        {submitStatus === 'success' && (
+          <div className="mt-6 rounded-2xl border border-emerald-300/40 bg-emerald-100/70 p-4">
+            <div className="flex items-start gap-3">
+              <CheckCircle className="mt-0.5 text-emerald-700" size={20} />
               <div>
-                <h3 className="font-bold text-green-800">Application Submitted Successfully!</h3>
-                <p className="text-green-700">
-                  We&apos;ll review your profile and get back to you within 24 hours.
-                </p>
+                <h3 className="text-sm font-semibold uppercase tracking-[0.08em] text-emerald-800">Application submitted</h3>
+                <p className="text-sm text-emerald-700">Your profile was submitted successfully and is now under review.</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Error Message */}
-        {submitStatus === "error" && (
-          <div className="mb-8 p-6 bg-red-100 border border-red-300 rounded-3xl">
-            <div className="flex items-center space-x-3">
-              <AlertCircle className="text-red-600" size={24} />
+        {submitStatus === 'error' && (
+          <div className="mt-6 rounded-2xl border border-red-300/45 bg-red-100/70 p-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="mt-0.5 text-red-700" size={20} />
               <div>
-                <h3 className="font-bold text-red-800">Submission Failed</h3>
-                <p className="text-red-700">Please try again or contact support if the problem persists.</p>
+                <h3 className="text-sm font-semibold uppercase tracking-[0.08em] text-red-800">Submission failed</h3>
+                <p className="text-sm text-red-700">Please check the form details and try again.</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Form */}
-        <div className="bg-glass-bg backdrop-blur-lg border border-secondary/20 rounded-3xl p-8 shadow-xl">
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Avatar Upload */}
-            <div>
-              <label className="block text-sm font-medium text-text/70 mb-4">
-                Profile Picture (Optional)
-              </label>
-
-              <div className="flex items-center space-x-6">
-                {/* Preview Box */}
-                <div className="w-24 h-24 bg-gradient-to-br from-secondary/20 to-primary/10 rounded-2xl flex items-center justify-center border-2 border-dashed border-secondary/30">
-                  {avatarFile ? (
-                    <Image
-                      src={URL.createObjectURL(avatarFile)}
-                      alt="Avatar preview"
-                      width={100}
-                      height={100}
-                      className="w-full h-full object-cover rounded-2xl"
-                    />
-                  ) : formData.avatar ? (
-                    <Image
-                      src={formData.avatar}
-                      alt="Avatar preview"
-                      width={100}
-                      height={100}
-                      className="w-full h-full object-cover rounded-2xl"
-                    />
-                  ) : (
-                    <User size={32} className="text-text/40" />
-                  )}
-                </div>
-
-                {/* Inputs */}
-                <div className="space-y-2">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="block w-full text-sm text-text
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-full file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-primary file:text-baby-powder
-                    hover:file:bg-primary-light"
-                  />
-
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1.35fr_0.65fr]">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <section className="premium-card rounded-3xl border border-primary/15 p-5 sm:p-6">
+              <div className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.1em] text-primary">
+                <User size={14} />
+                Profile Identity
+              </div>
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-[0.35fr_0.65fr]">
+                <div className="rounded-2xl border border-primary/15 bg-baby-powder/85 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-text/60">Profile Photo</p>
+                  <div className="mt-3 flex justify-center">
+                    {avatarPreview ? (
+                      <img
+                        src={avatarPreview}
+                        alt="Avatar preview"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = '/default-profile.png';
+                        }}
+                        className="h-28 w-28 rounded-2xl object-cover ring-1 ring-primary/20"
+                      />
+                    ) : (
+                      <div className="flex h-28 w-28 items-center justify-center rounded-2xl bg-primary/10 text-3xl font-semibold uppercase text-primary ring-1 ring-primary/20">
+                        {avatarInitial}
+                      </div>
+                    )}
+                  </div>
+                  <label className="mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-primary/20 bg-baby-powder px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-primary transition-colors hover:border-primary/35">
+                    <Upload size={13} />
+                    Upload Image
+                    <input type="file" accept="image/*" onChange={handleAvatarFileChange} className="hidden" />
+                  </label>
+                  <p className="mt-2 text-center text-[11px] text-text/55">Or paste direct image URL</p>
                   <input
                     type="text"
                     name="avatar"
                     value={formData.avatar}
                     onChange={handleInputChange}
-                    placeholder="Or paste image URL"
-                    className="w-full px-4 py-3 bg-baby-powder/50 border border-secondary/30 rounded-2xl text-text placeholder-text/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    placeholder="https://example.com/avatar.jpg"
+                    className="mt-2 w-full rounded-xl border border-primary/20 bg-baby-powder/90 px-3 py-2 text-xs text-text placeholder:text-text/45 focus:border-primary/45 focus:outline-none"
                   />
+                  {errors.avatar && <p className="mt-2 text-xs text-red-600">{errors.avatar}</p>}
+                </div>
 
-                  <p className="text-xs text-text/60">Upload a file or paste a URL</p>
-
-                  {errors.avatar && (
-                    <p className="mt-2 text-sm text-red-600">{errors.avatar}</p>
-                  )}
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-text/60">
+                    Professional Title
+                  </label>
+                  <div className="relative">
+                    <Briefcase className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text/45" size={16} />
+                    <input
+                      name="title"
+                      value={formData.title}
+                      onChange={handleInputChange}
+                      placeholder="e.g., Brand Designer and Visual Strategist"
+                      className={`${inputClass} pl-10 ${errors.title ? 'border-red-300 focus:border-red-400 focus:ring-red-200/50' : ''}`}
+                    />
+                  </div>
+                  {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title}</p>}
                 </div>
               </div>
-            </div>
+            </section>
 
-            {/* Professional Title */}
-            <div>
-              <label className="block text-sm font-medium text-text/70 mb-2">
-                Professional Title *
-              </label>
-
-              <div className="relative">
-                <Briefcase
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text/40"
-                  size={20}
-                />
-
-                <input
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Graphic Designer & Brand Specialist"
-                  className={`w-full pl-12 pr-4 py-4 bg-baby-powder/50 border rounded-2xl text-text placeholder-text/50 focus:outline-none focus:ring-2 transition-all ${
-                    errors.title
-                      ? "border-red-300 focus:ring-red-200"
-                      : "border-secondary/30 focus:border-primary focus:ring-primary/20"
-                  }`}
-                />
+            <section className="premium-card rounded-3xl border border-primary/15 p-5 sm:p-6">
+              <div className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.1em] text-primary">
+                <Star size={14} />
+                Skills and Expertise
               </div>
-
-              {errors.title && <p className="mt-2 text-sm text-red-600">{errors.title}</p>}
-            </div>
-
-            {/* Skills */}
-            <div>
-              <label className="block text-sm font-medium text-text/70 mb-2">
-                Skills &amp; Expertise *
-              </label>
-
-              {/* Add Skill */}
-              <div className="flex space-x-2 mb-4">
+              <div className="flex flex-col gap-3 sm:flex-row">
                 <input
                   value={newSkill}
                   onChange={(e) => setNewSkill(e.target.value)}
-                  onKeyPress={(e) =>
-                    e.key === "Enter" && (e.preventDefault(), addSkill())
-                  }
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addSkill();
+                    }
+                  }}
                   placeholder="Add a skill..."
-                  className="flex-1 px-4 py-3 bg-baby-powder/50 border border-secondary/30 rounded-2xl text-text placeholder-text/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className={inputClass}
                 />
-
                 <button
                   type="button"
                   onClick={addSkill}
-                  className="px-4 py-3 bg-primary text-baby-powder rounded-2xl hover:bg-primary-light transition-colors"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-baby-powder transition-colors hover:bg-primary-light"
                 >
-                  <Plus size={20} />
+                  <Plus size={14} />
+                  Add
                 </button>
               </div>
 
-              {/* Suggested */}
-              <div className="mb-4">
-                <p className="text-xs text-text/60 mb-2">Suggested skills:</p>
-
+              <div className="mt-4">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-text/55">Suggested skills</p>
                 <div className="flex flex-wrap gap-2">
                   {suggestedSkills.map((skill) => (
                     <button
@@ -456,14 +436,11 @@ const BecomeCollaboratorPage: React.FC = () => {
                       type="button"
                       onClick={() => {
                         if (!formData.skills.includes(skill)) {
-                          setFormData((prev) => ({
-                            ...prev,
-                            skills: [...prev.skills, skill],
-                          }));
-                          setErrors((prev) => ({ ...prev, skills: "" }));
+                          setFormData((prev) => ({ ...prev, skills: [...prev.skills, skill] }));
+                          setErrors((prev) => ({ ...prev, skills: '' }));
                         }
                       }}
-                      className="px-3 py-1 bg-secondary/20 text-text text-xs rounded-full hover:bg-primary/20 hover:text-primary transition-colors"
+                      className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary transition-colors hover:border-primary/35"
                     >
                       + {skill}
                     </button>
@@ -471,296 +448,263 @@ const BecomeCollaboratorPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Selected Skills */}
-              <div className="flex flex-wrap gap-2">
+              <div className="mt-4 flex flex-wrap gap-2">
                 {formData.skills.map((skill) => (
                   <span
                     key={skill}
-                    className="inline-flex items-center space-x-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
+                    className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-baby-powder px-3 py-1 text-xs font-semibold text-primary"
                   >
-                    <span>{skill}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeSkill(skill)}
-                      className="hover:text-primary-light"
-                    >
-                      <X size={14} />
+                    {skill}
+                    <button type="button" onClick={() => removeSkill(skill)} className="text-primary/70 hover:text-primary">
+                      <X size={13} />
                     </button>
                   </span>
                 ))}
               </div>
+              {errors.skills && <p className="mt-2 text-xs text-red-600">{errors.skills}</p>}
+            </section>
 
-              {errors.skills && <p className="mt-2 text-sm text-red-600">{errors.skills}</p>}
-            </div>
-
-            {/* Portfolio */}
-            <div>
-              <label className="block text-sm font-medium text-text/70 mb-2">
-                Portfolio (Optional)
-              </label>
-
-              {/* Title */}
-              <input
-                value={newPortfolio.title}
-                onChange={(e) =>
-                  setNewPortfolio({ ...newPortfolio, title: e.target.value })
-                }
-                placeholder="Portfolio Title (e.g., Social Media Campaign)"
-                className="mb-2 w-full px-4 py-3 bg-baby-powder/50 border border-secondary/30 rounded-2xl"
-              />
-
-              {/* Service Type */}
-              <input
-                value={newPortfolio.serviceType}
-                onChange={(e) =>
-                  setNewPortfolio({ ...newPortfolio, serviceType: e.target.value })
-                }
-                placeholder="Service Type (e.g., Social Media)"
-                className="mb-2 w-full px-4 py-3 bg-baby-powder/50 border border-secondary/30 rounded-2xl"
-              />
-
-              {/* URL */}
+            <section className="premium-card rounded-3xl border border-primary/15 p-5 sm:p-6">
+              <div className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.1em] text-primary">
+                <Briefcase size={14} />
+                Portfolio Highlights
+              </div>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <input
+                  value={newPortfolio.title}
+                  onChange={(e) => setNewPortfolio({ ...newPortfolio, title: e.target.value })}
+                  placeholder="Project title"
+                  className={inputClass}
+                />
+                <input
+                  value={newPortfolio.serviceType}
+                  onChange={(e) => setNewPortfolio({ ...newPortfolio, serviceType: e.target.value })}
+                  placeholder="Service type"
+                  className={inputClass}
+                />
+              </div>
               <input
                 value={newPortfolio.url}
-                onChange={(e) =>
-                  setNewPortfolio({ ...newPortfolio, url: e.target.value })
-                }
-                placeholder="Portfolio URL..."
-                className="mb-2 w-full px-4 py-3 bg-baby-powder/50 border border-secondary/30 rounded-2xl"
+                onChange={(e) => setNewPortfolio({ ...newPortfolio, url: e.target.value })}
+                placeholder="Project URL"
+                className={`${inputClass} mt-3`}
               />
+              <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-primary/20 bg-baby-powder px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-primary transition-colors hover:border-primary/35">
+                  <Upload size={13} />
+                  Add Project Image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setPortfolioImageFile(e.target.files?.[0] || null)}
+                    className="hidden"
+                  />
+                </label>
+                <span className="text-xs text-text/55">
+                  {portfolioImageFile ? portfolioImageFile.name : 'No image selected'}
+                </span>
+              </div>
 
-              {/* Image */}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setPortfolioImageFile(e.target.files?.[0] || null)}
-                className="mb-4 w-full"
-              />
-
-              {/* Add Button */}
               <button
                 type="button"
                 onClick={addPortfolioItem}
-                className="px-4 py-3 bg-secondary text-baby-powder rounded-2xl hover:bg-secondary/80 transition-colors"
+                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-secondary px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.08em] text-baby-powder transition-colors hover:bg-secondary/85"
               >
-                <Plus size={20} />
+                <Plus size={13} />
+                Add Portfolio Item
               </button>
 
-              {/* Portfolio list */}
               {formData.portfolio.length > 0 && (
-                <div className="mt-4 space-y-2">
+                <div className="mt-4 space-y-3">
                   {formData.portfolio.map((item, index) => (
                     <div
-                      key={index}
-                      className="flex items-center justify-between p-3 bg-baby-powder/50 rounded-xl border border-secondary/20"
+                      key={`${item.title}-${index}`}
+                      className="rounded-2xl border border-primary/15 bg-baby-powder/90 p-3 shadow-[0_8px_22px_rgba(80,61,63,0.05)]"
                     >
-                      <div className="flex-1">
-                        <p className="font-medium">
-                          {item.title} - <span className="text-sm">{item.serviceType}</span>
-                        </p>
-
-                        <a href={item.url} className="text-primary text-sm truncate block">
-                          {item.url}
-                        </a>
-
-                        {item.image && (
-                          <Image
-                            src={item.image}
-                            alt={item.title}
-                            width={64}
-                            height={64}
-                            className="mt-2 w-16 h-16 object-cover rounded"
-                          />
-                        )}
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold text-text">{item.title}</p>
+                          <p className="text-xs uppercase tracking-[0.08em] text-primary">{item.serviceType}</p>
+                          <a
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-1 block truncate text-xs text-text/60 hover:text-primary"
+                          >
+                            {item.url}
+                          </a>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removePortfolioItemByIndex(index)}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-primary/15 text-text/60 transition-colors hover:border-red-300 hover:text-red-600"
+                          aria-label="Remove portfolio item"
+                        >
+                          <X size={14} />
+                        </button>
                       </div>
-
-                      <button
-                        type="button"
-                        onClick={() => removePortfolioItemByIndex(index)}
-                        className="ml-2 text-text/40 hover:text-red-500 transition-colors"
-                      >
-                        <X size={16} />
-                      </button>
+                      {item.image && (
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = '/default-profile.png';
+                          }}
+                          className="mt-3 h-24 w-24 rounded-lg object-cover"
+                        />
+                      )}
                     </div>
                   ))}
                 </div>
               )}
-            </div>
+            </section>
 
-            {/* Starting Price & Response Time */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-text/70 mb-2">
-                  Starting Price *
-                </label>
-
-                <div className="relative">
-                  <DollarSign
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text/40"
-                    size={20}
-                  />
-
-                  <input
-                    name="startingPrice"
-                    value={formData.startingPrice}
-                    onChange={handleInputChange}
-                    placeholder="e.g., ₨15,000 per project"
-                    className={`w-full pl-12 pr-4 py-4 bg-baby-powder/50 border rounded-2xl text-text placeholder-text/50 focus:outline-none focus:ring-2 ${
-                      errors.startingPrice
-                        ? "border-red-300 focus:ring-red-200"
-                        : "border-secondary/30 focus:border-primary focus:ring-primary/20"
-                    }`}
-                  />
+            <section className="premium-card rounded-3xl border border-primary/15 p-5 sm:p-6">
+              <div className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.1em] text-primary">
+                <Clock size={14} />
+                Rates and Availability
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-text/60">Starting Price</label>
+                  <div className="relative">
+                    <DollarSign className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text/45" size={16} />
+                    <input
+                      name="startingPrice"
+                      value={formData.startingPrice}
+                      onChange={handleInputChange}
+                      placeholder="e.g., PKR 15,000 per project"
+                      className={`${inputClass} pl-10 ${errors.startingPrice ? 'border-red-300 focus:border-red-400 focus:ring-red-200/50' : ''}`}
+                    />
+                  </div>
+                  {errors.startingPrice && <p className="mt-1 text-xs text-red-600">{errors.startingPrice}</p>}
                 </div>
 
-                {errors.startingPrice && (
-                  <p className="mt-2 text-sm text-red-600">{errors.startingPrice}</p>
-                )}
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-text/60">Response Time</label>
+                  <div className="relative">
+                    <Clock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text/45" size={16} />
+                    <select
+                      name="responseTime"
+                      value={formData.responseTime}
+                      onChange={handleInputChange}
+                      className={`${inputClass} pl-10 ${errors.responseTime ? 'border-red-300 focus:border-red-400 focus:ring-red-200/50' : ''}`}
+                    >
+                      <option value="">Select response time</option>
+                      {responseTimeOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {errors.responseTime && <p className="mt-1 text-xs text-red-600">{errors.responseTime}</p>}
+                </div>
               </div>
 
-              {/* Response Time */}
-              <div>
-                <label className="block text-sm font-medium text-text/70 mb-2">
-                  Response Time *
-                </label>
-
+              <div className="mt-4">
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-text/60">Location</label>
                 <div className="relative">
-                  <Clock
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text/40"
-                    size={20}
-                  />
-
+                  <MapPin className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text/45" size={16} />
                   <select
-                    name="responseTime"
-                    value={formData.responseTime}
+                    name="location"
+                    value={formData.location}
                     onChange={handleInputChange}
-                    className={`w-full pl-12 pr-4 py-4 bg-baby-powder/50 border rounded-2xl text-text focus:outline-none focus:ring-2 ${
-                      errors.responseTime
-                        ? "border-red-300 focus:ring-red-200"
-                        : "border-secondary/30 focus:border-primary focus:ring-primary/20"
-                    }`}
+                    className={`${inputClass} pl-10 ${errors.location ? 'border-red-300 focus:border-red-400 focus:ring-red-200/50' : ''}`}
                   >
-                    <option value="">Select response time</option>
-                    {responseTimeOptions.map((option) => (
+                    <option value="">Select your location</option>
+                    {locationOptions.map((option) => (
                       <option key={option} value={option}>
                         {option}
                       </option>
                     ))}
                   </select>
                 </div>
-
-                {errors.responseTime && (
-                  <p className="mt-2 text-sm text-red-600">{errors.responseTime}</p>
-                )}
+                {errors.location && <p className="mt-1 text-xs text-red-600">{errors.location}</p>}
               </div>
-            </div>
+            </section>
 
-            {/* Location */}
-            <div>
-              <label className="block text-sm font-medium text-text/70 mb-2">
-                Location *
-              </label>
-
-              <div className="relative">
-                <MapPin
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text/40"
-                  size={20}
-                />
-
-                <select
-                  name="location"
-                  value={formData.location}
-                  onChange={handleInputChange}
-                  className={`w-full pl-12 pr-4 py-4 bg-baby-powder/50 border rounded-2xl text-text focus:outline-none focus:ring-2 ${
-                    errors.location
-                      ? "border-red-300 focus:ring-red-200"
-                      : "border-secondary/30 focus:border-primary focus:ring-primary/20"
-                  }`}
-                >
-                  <option value="">Select your location</option>
-                  {locationOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
+            {errors.form && (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {errors.form}
               </div>
+            )}
 
-              {errors.location && (
-                <p className="mt-2 text-sm text-red-600">{errors.location}</p>
-              )}
-            </div>
-
-            {/* Submit Button */}
-            <div className="pt-6">
+            <section className="premium-card rounded-3xl border border-primary/15 p-5">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`group w-full flex items-center justify-center space-x-2 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 ${
+                className={`group inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-4 text-sm font-semibold uppercase tracking-[0.08em] transition-all duration-300 ${
                   isSubmitting
-                    ? "bg-text/20 text-text/40 cursor-not-allowed"
-                    : "bg-gradient-to-r from-primary to-primary-light text-baby-powder hover:shadow-lg hover:shadow-result-cta-shadow hover:scale-105"
+                    ? 'cursor-not-allowed bg-text/15 text-text/45'
+                    : 'bg-gradient-to-r from-primary to-primary-light text-baby-powder hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(175,130,137,0.3)]'
                 }`}
               >
                 {isSubmitting ? (
                   <>
-                    <div className="w-6 h-6 border-2 border-text/20 border-t-text/40 rounded-full animate-spin"></div>
-                    <span>Submitting Application...</span>
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-baby-powder/40 border-t-baby-powder" />
+                    Submitting Application
                   </>
                 ) : (
                   <>
-                    <span>Join as Collaborator</span>
-                    <CheckCircle size={20} className="group-hover:scale-110 transition-transform" />
+                    Join as Collaborator
+                    <CheckCircle size={16} className="transition-transform group-hover:scale-110" />
                   </>
                 )}
               </button>
-            </div>
-
-            {/* Terms */}
-            <div className="text-center text-sm text-text/60">
-              By submitting this application, you agree to our{" "}
-              <Link href="/terms" className="text-primary hover:text-primary-light">
-                Terms of Service
-              </Link>{" "}
-              and{" "}
-              <Link href="/privacy" className="text-primary hover:text-primary-light">
-                Privacy Policy
-              </Link>
-            </div>
+              <p className="mt-3 text-center text-xs text-text/62">
+                By submitting, you agree to our{' '}
+                <Link href="/terms" className="font-medium text-primary hover:text-primary-light">
+                  Terms of Service
+                </Link>{' '}
+                and{' '}
+                <Link href="/privacy" className="font-medium text-primary hover:text-primary-light">
+                  Privacy Policy
+                </Link>
+                .
+              </p>
+            </section>
           </form>
-        </div>
 
-        {/* Additional Info */}
-        <div className="mt-12 text-center">
-          <div className="bg-gradient-to-br from-primary/5 to-accent2/5 rounded-3xl p-8">
-            <h3 className="text-xl font-bold text-text mb-4">What Happens Next?</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-2">
-                <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-light rounded-xl flex items-center justify-center mx-auto">
-                  <span className="text-baby-powder font-bold">1</span>
-                </div>
-                <h4 className="font-semibold text-text">Review</h4>
-                <p className="text-sm text-text/70">We&apos;ll review your application within 24 hours</p>
+          <aside className="space-y-6">
+            <article className="premium-card rounded-3xl border border-primary/15 p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-primary">Profile completion</p>
+              <p className="mt-2 font-display text-3xl text-text">{completionScore}%</p>
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-primary/10">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-primary to-accent2 transition-all duration-500"
+                  style={{ width: `${completionScore}%` }}
+                />
               </div>
+              <p className="mt-3 text-sm text-text/68">
+                Add core details to improve trust and get higher quality collaboration requests.
+              </p>
+            </article>
 
-              <div className="space-y-2">
-                <div className="w-12 h-12 bg-gradient-to-br from-accent2 to-accent2-light rounded-xl flex items-center justify-center mx-auto">
-                  <span className="text-baby-powder font-bold">2</span>
-                </div>
-                <h4 className="font-semibold text-text">Approval</h4>
-                <p className="text-sm text-text/70">Get approved and set up your profile</p>
+            <article className="premium-card rounded-3xl border border-primary/15 p-5">
+              <h3 className="font-display text-2xl text-text">What happens next</h3>
+              <div className="mt-4 space-y-3">
+                {[
+                  { step: '1', title: 'Review', text: 'Your application is reviewed by our team.' },
+                  { step: '2', title: 'Approval', text: 'Approved profiles are activated in the marketplace.' },
+                  { step: '3', title: 'Requests', text: 'Start receiving collaboration opportunities.' },
+                ].map((item) => (
+                  <div key={item.step} className="rounded-2xl border border-primary/15 bg-baby-powder/90 p-3">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-xs font-semibold text-baby-powder">
+                        {item.step}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-text">{item.title}</p>
+                        <p className="text-xs text-text/66">{item.text}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-
-              <div className="space-y-2">
-                <div className="w-12 h-12 bg-gradient-to-br from-secondary to-primary-light rounded-xl flex items-center justify-center mx-auto">
-                  <span className="text-baby-powder font-bold">3</span>
-                </div>
-                <h4 className="font-semibold text-text">Start Earning</h4>
-                <p className="text-sm text-text/70">Begin receiving collaboration requests</p>
-              </div>
-            </div>
-          </div>
+            </article>
+          </aside>
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, DollarSign, FileText, AlertTriangle, Mail, User } from 'lucide-react';
+import { AlertTriangle, Calendar, DollarSign, FileText, Mail, User } from 'lucide-react';
 import CollaborationStatusBadge from './CollaborationStatusBadge';
 
 interface CollaborationCardProps {
@@ -9,7 +9,7 @@ interface CollaborationCardProps {
     title: string;
     status: 'pending' | 'accepted' | 'in_progress' | 'completed' | 'declined' | 'cancelled';
     projectDescription?: string;
-    budget?: number;
+    budget?: number | string;
     deadline?: string;
     createdAt: string;
   };
@@ -27,115 +27,123 @@ const CollaborationCard: React.FC<CollaborationCardProps> = ({
   collaboration,
   collaborator,
   role,
-  isClient,
-  daysLeftInfo
+  daysLeftInfo,
 }) => {
-  const formatBudget = (budget?: number) => {
-    if (!budget) return 'No budget specified';
-    return `₨${budget.toLocaleString()}`;
+  const avatarSrc = collaborator.image || '/default-profile.png';
+  const initials = collaborator.name
+    .split(' ')
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  const formatBudget = (budget?: number | string | null) => {
+    if (!budget) return 'Budget not specified';
+    if (typeof budget === 'number') return `PKR ${budget.toLocaleString()}`;
+    return String(budget);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
-  };
 
   return (
-    <div className="bg-white/60 backdrop-blur-lg border border-secondary/20 rounded-2xl p-6 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-
-      {/* Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div className="flex items-center space-x-4">
-          <img
-            src={collaborator.image || '/default-profile.png'}
-            alt={collaborator.name}
-            className="w-14 h-14 rounded-full object-cover border-2 border-primary/30 shadow-sm"
-          />
-
-          <div>
-            <h3 className="text-lg font-semibold text-text">{collaborator.name}</h3>
-            <p className="text-sm text-text/60 flex items-center gap-1">
-              <User size={14} className="text-primary" />
+    <article className="premium-card group rounded-[1.5rem] border border-primary/15 bg-baby-powder/85 p-5 shadow-[0_10px_30px_rgba(80,61,63,0.06)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/30">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="rounded-2xl bg-baby-powder p-1.5 ring-1 ring-primary/20">
+            {avatarSrc ? (
+              <img
+                src={avatarSrc}
+                alt={collaborator.name}
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = '/default-profile.png';
+                }}
+                className="h-12 w-12 rounded-xl object-cover"
+              />
+            ) : (
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-sm font-semibold uppercase text-primary">
+                {initials || 'U'}
+              </div>
+            )}
+          </div>
+          <div className="min-w-0">
+            <h3 className="truncate text-base font-semibold text-text">{collaborator.name}</h3>
+            <p className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.08em] text-text/60">
+              <User size={12} className="text-primary" />
               {role}
             </p>
           </div>
         </div>
-
-        <CollaborationStatusBadge status={collaboration.status} size="md" />
+        <CollaborationStatusBadge status={collaboration.status} size="sm" />
       </div>
 
-      {/* Project Title */}
-      {collaboration.title && (
-        <h4 className="text-base font-semibold text-text mb-2">
-          {collaboration.title}
-        </h4>
-      )}
-
-      {/* Project Description */}
-      <div className="mb-5 bg-secondary/10 p-3 rounded-xl">
-        <div className="flex items-start space-x-2 mb-1">
-          <FileText className="text-primary mt-0.5" size={16} />
-          <span className="text-sm font-medium text-text">Project Description</span>
+      <div className="mt-4 rounded-2xl border border-primary/12 bg-baby-powder/90 p-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-primary">Project</p>
+        <h4 className="mt-1 line-clamp-1 text-sm font-semibold text-text">{collaboration.title || 'Untitled collaboration'}</h4>
+        <div className="mt-2 flex items-start gap-2">
+          <FileText size={14} className="mt-0.5 text-primary" />
+          <p className="line-clamp-3 text-sm leading-relaxed text-text/68">
+            {collaboration.projectDescription || 'No description provided.'}
+          </p>
         </div>
-        <p className="text-sm text-text/70 leading-relaxed pl-6 max-h-20 line-clamp-4">
-          {collaboration.projectDescription || 'No description provided'}
-        </p>
       </div>
 
-      {/* Budget & Contact */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <div className="rounded-xl border border-primary/12 bg-baby-powder/90 p-2.5">
+          <p className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.08em] text-text/55">
+            <DollarSign size={13} className="text-primary" />
+            Budget
+          </p>
+          <p className="mt-1 text-sm font-semibold text-text">{formatBudget(collaboration.budget)}</p>
+        </div>
 
-        {/* Budget */}
-        <div className="flex items-center space-x-2">
-          <DollarSign className="text-primary" size={18} />
-          <span className="text-sm font-medium text-text">
-            {formatBudget(collaboration.budget)}
+        <div className="rounded-xl border border-primary/12 bg-baby-powder/90 p-2.5">
+          <p className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.08em] text-text/55">
+            <Calendar size={13} className="text-primary" />
+            Deadline
+          </p>
+          <p className="mt-1 text-sm font-semibold text-text">
+            {collaboration.deadline ? formatDate(collaboration.deadline) : 'No deadline'}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+        {collaboration.contactMethod ? (
+          <span className="inline-flex items-center gap-1 rounded-full border border-primary/15 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-primary">
+            <Mail size={11} />
+            {collaboration.contactMethod}
           </span>
-        </div>
-
-        {/* Contact */}
-        {collaboration.contactMethod && (
-          <div className="flex items-center space-x-2">
-            <Mail className="text-primary" size={16} />
-            <span className="text-sm text-text/70">{collaboration.contactMethod}</span>
-          </div>
+        ) : (
+          <span className="text-[11px] uppercase tracking-[0.08em] text-text/45">No contact method</span>
         )}
-      </div>
 
-      {/* Deadline & Days Left */}
-      <div className="flex items-center justify-between border-t pt-4">
-
-        <div className="flex items-center space-x-2">
-          <Calendar className="text-primary" size={16} />
-          <span className="text-sm text-text/70">
-            {collaboration.deadline
-              ? formatDate(collaboration.deadline)
-              : 'No deadline set'}
-          </span>
-        </div>
-
-        {daysLeftInfo && (
-          <div
-            className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${
+        {daysLeftInfo ? (
+          <span
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${
               daysLeftInfo.isOverdue
-                ? 'bg-red-100 text-red-700'
-                : 'bg-blue-100 text-blue-700'
+                ? 'border border-red-300/50 bg-red-100/80 text-red-700'
+                : 'border border-sky-300/40 bg-sky-100/70 text-sky-700'
             }`}
           >
-            {daysLeftInfo.isOverdue && <AlertTriangle size={12} />}
-            <span>{daysLeftInfo.text}</span>
-          </div>
+            {daysLeftInfo.isOverdue && <AlertTriangle size={11} />}
+            {daysLeftInfo.text}
+          </span>
+        ) : (
+          <span className="text-[11px] uppercase tracking-[0.08em] text-text/45">No timeline</span>
         )}
       </div>
 
-      {/* Footer */}
-      <div className="mt-4 text-xs text-text/50">
-        Created on {formatDate(collaboration.createdAt)}
-      </div>
-    </div>
+      <p className="mt-3 text-[11px] uppercase tracking-[0.08em] text-text/45">
+        Created {formatDate(collaboration.createdAt)}
+      </p>
+    </article>
   );
 };
 

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Calendar, DollarSign, User, AlertTriangle } from 'lucide-react';
+import React from 'react';
+import { AlertTriangle, Calendar, DollarSign, User } from 'lucide-react';
 import CollaborationStatusBadge from './CollaborationStatusBadge';
 import { Collaboration } from '../types/collaboration';
 
@@ -20,21 +20,10 @@ const CollaborationTable: React.FC<CollaborationTableProps> = ({
   currentUserId,
   getCollaboratorInfo,
   formatDaysLeft,
-  onUpdateCollaboration
 }) => {
-  const [localCollaborations, setLocalCollaborations] = useState<Collaboration[]>(collaborations);
-  const [selected, setSelected] = useState<Collaboration | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [loadingAction, setLoadingAction] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setLocalCollaborations(collaborations);
-  }, [collaborations]);
-
   const formatBudget = (budget?: string | number | null) => {
     if (!budget) return 'Not specified';
-    if (typeof budget === 'number') return `₨${budget.toLocaleString()}`;
+    if (typeof budget === 'number') return `PKR ${budget.toLocaleString()}`;
     return budget;
   };
 
@@ -43,7 +32,7 @@ const CollaborationTable: React.FC<CollaborationTableProps> = ({
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
@@ -55,109 +44,88 @@ const CollaborationTable: React.FC<CollaborationTableProps> = ({
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
-  const openModal = (collab: Collaboration) => {
-    setSelected(collab);
-    setModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setSelected(null);
-    setModalOpen(false);
-    setError(null);
-  };
-
-  const handleAction = async (collabId: string, action: 'accept' | 'decline' | 'start' | 'complete') => {
-    setLoadingAction(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/collaborations/${collabId}/${action}`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (!res.ok) {
-        const body = await res.text();
-        throw new Error(body || `Failed to ${action}`);
-      }
-
-      const updated = (await res.json()) as Collaboration;
-
-      setLocalCollaborations(prev => prev.map(c => (c.id === updated.id ? updated : c)));
-
-      if (onUpdateCollaboration) onUpdateCollaboration(updated);
-
-      if (selected && selected.id === updated.id) {
-        setSelected(updated);
-      }
-    } catch (err: unknown) {
-      console.error(err);
-      setError(err instanceof Error ? err.message : 'Action failed');
-    } finally {
-      setLoadingAction(false);
-    }
-  };
-
   return (
-    <div className="bg-glass-bg backdrop-blur-sm border border-secondary/20 rounded-2xl overflow-hidden">
-      {/* Desktop Table */}
-      <div className="hidden lg:block overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-secondary/10 border-b border-secondary/20">
+    <div className="premium-card overflow-hidden rounded-3xl border border-primary/15 bg-baby-powder/85">
+      <div className="hidden overflow-x-auto lg:block">
+        <table className="w-full min-w-[900px]">
+          <thead className="border-b border-primary/15 bg-primary/8">
             <tr>
-              <th className="text-left p-4 font-semibold text-text">Collaborator</th>
-              <th className="text-left p-4 font-semibold text-text">Role</th>
-              <th className="text-left p-4 font-semibold text-text">Project</th>
-              <th className="text-left p-4 font-semibold text-text">Status</th>
-              <th className="text-left p-4 font-semibold text-text">Budget</th>
-              <th className="text-left p-4 font-semibold text-text">Deadline</th>
-              <th className="text-left p-4 font-semibold text-text">Created</th>
-              <th className="text-left p-4 font-semibold text-text">Actions</th>
+              <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.08em] text-text/62">Collaborator</th>
+              <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.08em] text-text/62">Role</th>
+              <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.08em] text-text/62">Project</th>
+              <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.08em] text-text/62">Status</th>
+              <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.08em] text-text/62">Budget</th>
+              <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.08em] text-text/62">Deadline</th>
+              <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.08em] text-text/62">Created</th>
             </tr>
           </thead>
           <tbody>
-            {localCollaborations.map((collaboration, index) => {
-              const { collaborator, role, isClient } = getCollaboratorInfo(collaboration, currentUserId);
+            {collaborations.map((collaboration, index) => {
+              const { collaborator, role } = getCollaboratorInfo(collaboration, currentUserId);
               const daysLeft = calculateDaysLeft(collaboration.deadline);
               const daysLeftInfo = formatDaysLeft(daysLeft ?? undefined);
               return (
-                <tr key={collaboration.id} className={`border-b border-secondary/10 hover:bg-baby-powder/30 transition-colors ${index % 2 === 0 ? 'bg-baby-powder/10' : ''}`}>
-                  <td className="p-4">
-                    <div className="flex items-center space-x-3">
-                      <img src={collaborator.image || '/default-profile.png'} alt={collaborator.name} className="w-10 h-10 rounded-full object-cover border border-primary/20" />
-                      <div><p className="font-medium text-text">{collaborator.name}</p></div>
+                <tr
+                  key={collaboration.id}
+                  className={`border-b border-primary/10 transition-colors hover:bg-primary/5 ${
+                    index % 2 === 0 ? 'bg-baby-powder/80' : 'bg-baby-powder/60'
+                  }`}
+                >
+                  <td className="px-4 py-4">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={collaborator.image || '/default-profile.png'}
+                        alt={collaborator.name}
+                        className="h-10 w-10 rounded-full border border-primary/20 object-cover"
+                      />
+                      <p className="text-sm font-semibold text-text">{collaborator.name}</p>
                     </div>
                   </td>
-                  <td className="p-4">
-                    <div className="flex items-center space-x-2">
-                      <User className="text-primary" size={16} />
-                      <span className="text-sm text-text/70">{role}</span>
+                  <td className="px-4 py-4">
+                    <p className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.08em] text-text/65">
+                      <User size={12} className="text-primary" />
+                      {role}
+                    </p>
+                  </td>
+                  <td className="px-4 py-4">
+                    <div>
+                      <p className="max-w-xs truncate text-sm font-semibold text-text">
+                        {collaboration.title || 'Untitled collaboration'}
+                      </p>
+                      <p className="max-w-xs truncate text-xs text-text/62">
+                        {collaboration.projectDescription || 'No description'}
+                      </p>
                     </div>
                   </td>
-                  <td className="p-4">
-                    <p className="text-sm text-text/70 max-w-xs truncate">{collaboration.projectDescription || 'No description'}</p>
-                  </td>
-                  <td className="p-4">
+                  <td className="px-4 py-4">
                     <CollaborationStatusBadge status={collaboration.status} size="sm" />
                   </td>
-                  <td className="p-4">
-                    <div className="flex items-center space-x-2">
-                      <DollarSign className="text-primary" size={16} />
-                      <span className="text-sm text-text">{formatBudget(collaboration.budget)}</span>
-                    </div>
+                  <td className="px-4 py-4">
+                    <p className="inline-flex items-center gap-1 text-sm text-text">
+                      <DollarSign size={14} className="text-primary" />
+                      {formatBudget(collaboration.budget)}
+                    </p>
                   </td>
-                  <td className="p-4">
+                  <td className="px-4 py-4">
                     <div className="space-y-1">
-                      <div className="flex items-center space-x-2">
-                        <Calendar className="text-primary" size={16} />
-                        <span className="text-sm text-text">{collaboration.deadline ? formatDate(collaboration.deadline) : 'No deadline'}</span>
-                      </div>
-                      {daysLeftInfo && <div className={`flex items-center space-x-1 text-xs ${daysLeftInfo.isOverdue ? 'text-red-600' : 'text-blue-600'}`}>{daysLeftInfo.isOverdue && <AlertTriangle size={12} />}<span>{daysLeftInfo.text}</span></div>}
+                      <p className="inline-flex items-center gap-1 text-sm text-text">
+                        <Calendar size={14} className="text-primary" />
+                        {collaboration.deadline ? formatDate(collaboration.deadline) : 'No deadline'}
+                      </p>
+                      {daysLeftInfo && (
+                        <p
+                          className={`inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.08em] ${
+                            daysLeftInfo.isOverdue ? 'text-red-600' : 'text-sky-700'
+                          }`}
+                        >
+                          {daysLeftInfo.isOverdue && <AlertTriangle size={11} />}
+                          {daysLeftInfo.text}
+                        </p>
+                      )}
                     </div>
                   </td>
-                  <td className="p-4"><span className="text-sm text-text/60">{formatDate(collaboration.createdAt)}</span></td>
-                  <td className="p-4">
-                    {/* Actions buttons unchanged */}
+                  <td className="px-4 py-4 text-xs uppercase tracking-[0.08em] text-text/55">
+                    {formatDate(collaboration.createdAt)}
                   </td>
                 </tr>
               );
@@ -165,7 +133,58 @@ const CollaborationTable: React.FC<CollaborationTableProps> = ({
           </tbody>
         </table>
       </div>
-      {/* Mobile Cards and Modal remain unchanged, remove all 'as any' usage */}
+
+      <div className="space-y-3 p-4 lg:hidden">
+        {collaborations.map((collaboration) => {
+          const { collaborator, role } = getCollaboratorInfo(collaboration, currentUserId);
+          const daysLeft = calculateDaysLeft(collaboration.deadline);
+          const daysLeftInfo = formatDaysLeft(daysLeft ?? undefined);
+          return (
+            <article key={collaboration.id} className="rounded-2xl border border-primary/15 bg-baby-powder/92 p-4">
+              <div className="mb-3 flex items-start justify-between gap-2">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={collaborator.image || '/default-profile.png'}
+                    alt={collaborator.name}
+                    className="h-10 w-10 rounded-full border border-primary/20 object-cover"
+                  />
+                  <div>
+                    <p className="text-sm font-semibold text-text">{collaborator.name}</p>
+                    <p className="text-[11px] uppercase tracking-[0.08em] text-text/55">{role}</p>
+                  </div>
+                </div>
+                <CollaborationStatusBadge status={collaboration.status} size="sm" />
+              </div>
+
+              <p className="text-sm font-semibold text-text">{collaboration.title || 'Untitled collaboration'}</p>
+              <p className="mt-1 text-sm text-text/65 line-clamp-2">
+                {collaboration.projectDescription || 'No description'}
+              </p>
+
+              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <p className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.08em] text-text/60">
+                  <DollarSign size={13} className="text-primary" />
+                  {formatBudget(collaboration.budget)}
+                </p>
+                <p className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.08em] text-text/60">
+                  <Calendar size={13} className="text-primary" />
+                  {collaboration.deadline ? formatDate(collaboration.deadline) : 'No deadline'}
+                </p>
+              </div>
+              {daysLeftInfo && (
+                <p
+                  className={`mt-2 inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.08em] ${
+                    daysLeftInfo.isOverdue ? 'text-red-600' : 'text-sky-700'
+                  }`}
+                >
+                  {daysLeftInfo.isOverdue && <AlertTriangle size={11} />}
+                  {daysLeftInfo.text}
+                </p>
+              )}
+            </article>
+          );
+        })}
+      </div>
     </div>
   );
 };
