@@ -282,7 +282,7 @@ const BecomeCollaboratorPage: React.FC = () => {
             <h1 className="font-display mt-3 text-4xl leading-tight text-text sm:text-5xl">
               Build a premium collaborator profile
             </h1>
-            <p className="mx-auto mt-3 max-w-3xl text-base leading-relaxed text-text/72 sm:text-lg">
+            <p className="mx-auto mt-3 max-w-3xl text-primary leading-relaxed text-text/72 sm:text-lg">
               Showcase your expertise, set your rates, and start receiving high-intent collaboration requests.
             </p>
           </div>
